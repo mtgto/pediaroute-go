@@ -1,0 +1,53 @@
+{
+    "name": "web",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service serve",
+        "build": "vue-cli-service build",
+        "lint": "vue-cli-service lint",
+        "asset": "statik -p web -src dist -dest ../internal/app"
+    },
+    "dependencies": {
+        "vue": "^2.5.17",
+        "vue-class-component": "^6.0.0",
+        "vue-property-decorator": "^7.0.0",
+        "vue-router": "^3.0.1"
+    },
+    "devDependencies": {
+        "@vue/cli-plugin-typescript": "^3.2.0",
+        "@vue/cli-service": "^3.2.0",
+        "lint-staged": "^7.2.2",
+        "prettier": "^1.15.3",
+        "typescript": "^3.0.0",
+        "vue-template-compiler": "^2.5.17"
+    },
+    "gitHooks": {
+        "pre-commit": "lint-staged"
+    },
+    "lint-staged": {
+        "*.ts": [
+            "vue-cli-service lint",
+            "git add"
+        ],
+        "*.vue": [
+            "vue-cli-service lint",
+            "git add"
+        ]
+    },
+    "prettier": {
+        "printWidth": 150,
+        "singleQuote": true,
+        "trailingComma": "all",
+        "tabWidth": 4
+    },
+    "vue": {
+        "devServer": {
+            "proxy": {
+                "/api": {
+                    "target": "http://localhost:9000"
+                }
+            }
+        }
+    }
+}

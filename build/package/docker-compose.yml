@@ -1,0 +1,20 @@
+version: '3.2'
+services:
+  web:
+    image: pediaroute
+    ports:
+      - 9000:9000
+    volumes:
+      - type: volume
+        source: pediaroute-data
+        target: /data
+        read_only: true
+        consistency: cached
+    environment:
+      TITLE_FILE: /data/title.dat
+      TITLE_INDICES_FILE: /data/titleIndices.dat
+      LINK_FILE: /data/link.dat
+volumes:
+  pediaroute-data:
+    external:
+      name: pediaroute-data

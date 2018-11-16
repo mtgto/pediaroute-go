@@ -1,0 +1,6 @@
+.idea
+*.dat
+build
+vendor
+web/dist
+web/node_modules
