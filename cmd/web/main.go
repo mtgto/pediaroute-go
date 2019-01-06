@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	var wikipedia web.Wikipedia
 
 	var (
@@ -53,9 +53,9 @@ func main() {
 		log.Fatal(err)
 	}
 	fileServer := http.FileServer(statikFS)
-	http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
-		fileServer.ServeHTTP(w, r)
-	})
+	http.Handle("/", fileServer)
+	http.Handle("/about", http.StripPrefix("/about", fileServer))
+	http.Handle("/search", http.StripPrefix("/search", fileServer))
 
 	type Pair struct {
 		From string `json:"from"`
@@ -103,6 +103,7 @@ func main() {
 			w.Header().Set("Content-Type", "application/json")
 			from := wikipedia.GetRandomPage()
 			to := wikipedia.GetRandomPage()
+			log.Printf("Random pages from \"%v\" to \"%v\"\n", from, to)
 			pair := Pair{from, to}
 			err := json.NewEncoder(w).Encode(pair)
 			if err != nil {
