@@ -3,9 +3,10 @@ LDFLAGS := -w -s
 
 GEN := build/gen
 WEB := build/web
+BENCH := build/bench
 
 .PHONY: all
-all: $(GEN) $(WEB)
+all: $(GEN) $(WEB) $(BENCH)
 
 .PHONY: test
 test: test-web
@@ -14,6 +15,9 @@ $(GEN): cmd/gen/main.go $(wildcard internal/app/core/*.go) $(wildcard internal/a
 	$(GO) build -ldflags "$(LDFLAGS)" -o $@ $<
 
 $(WEB): cmd/web/main.go $(wildcard internal/app/core/*.go) $(wildcard internal/app/web/*.go)
+	$(GO) build -ldflags "$(LDFLAGS)" -o $@ $<
+
+$(BENCH): cmd/bench/main.go $(wildcard internal/app/core/*.go)
 	$(GO) build -ldflags "$(LDFLAGS)" -o $@ $<
 
 test-web:
