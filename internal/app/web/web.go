@@ -1,18 +1,20 @@
 package web
 
 import (
+	"encoding/binary"
 	"errors"
+	"github.com/mtgto/pediaroute-go/internal/app/core"
+	"log"
 	"math/rand"
+	"os"
 	"strings"
 )
 
 // Data structure
 type Wikipedia struct {
-	titles                  []string
-	redirectSet             map[int]struct{} // whether page index is redirected
+	pages                   []core.Page
 	lowercaseTitleToIndices map[string][]int // map from lowercase of title to index
-	forwardLinks            [][]int
-	backwardLinks           [][]int
+	linkFile                *os.File
 }
 
 var NotFound = errors.New("Not found")
@@ -28,7 +30,7 @@ func (w *Wikipedia) Search(from, to string) []string {
 	} else {
 		result := make([]string, len(way))
 		for i, index := range way {
-			result[i] = w.titles[index]
+			result[i] = w.pages[index].Title
 		}
 		return result
 	}
@@ -43,7 +45,7 @@ func (w *Wikipedia) IsWordExists(word string) bool {
 func (w *Wikipedia) IsWordRedirect(word string) bool {
 	if indices, exists := w.lowercaseTitleToIndices[strings.ToLower(word)]; exists {
 		for _, index := range indices {
-			if _, exists := w.redirectSet[index]; !exists {
+			if !w.pages[index].IsRedirect {
 				return false
 			}
 		}
@@ -54,7 +56,7 @@ func (w *Wikipedia) IsWordRedirect(word string) bool {
 
 func (w *Wikipedia) GetRandomPage() string {
 	for {
-		title := w.titles[rand.Intn(len(w.titles))]
+		title := w.pages[rand.Intn(len(w.pages))].Title
 		if !w.IsWordRedirect(title) {
 			return title
 		}
@@ -78,11 +80,16 @@ func (w *Wikipedia) search(start, goal *map[int]struct{}, depth int) ([]int, err
 	if len(*start) < len(*goal) {
 		nextStarts := make(map[int]struct{}, 0)
 		for from, _ := range *start {
-			for _, to := range w.forwardLinks[from] {
-				if _, ok := (*goal)[to]; ok {
-					return []int{from, to}, nil
+			links, err := w.forwardLinks(w.pages[from])
+			if err != nil {
+				return nil, err
+			}
+			for _, to := range links {
+				toIndex := int(to)
+				if _, ok := (*goal)[toIndex]; ok {
+					return []int{from, toIndex}, nil
 				} else {
-					nextStarts[to] = struct{}{}
+					nextStarts[toIndex] = struct{}{}
 				}
 			}
 		}
@@ -90,19 +97,30 @@ func (w *Wikipedia) search(start, goal *map[int]struct{}, depth int) ([]int, err
 		if err != nil {
 			return nil, err
 		}
-		for _, index := range w.backwardLinks[way[0]] {
-			if _, ok := (*start)[index]; ok {
-				return append([]int{index}, way...), nil
+		links, err := w.backwardLinks(w.pages[way[0]])
+		if err != nil {
+			return nil, err
+		}
+		for _, from := range links {
+			fromIndex := int(from)
+			if _, ok := (*start)[fromIndex]; ok {
+				return append([]int{fromIndex}, way...), nil
 			}
 		}
 	} else {
 		nextGoals := make(map[int]struct{}, 0)
 		for to, _ := range *goal {
-			for _, from := range w.backwardLinks[to] {
-				if _, ok := (*start)[from]; ok {
-					return []int{from, to}, nil
+			links, err := w.backwardLinks(w.pages[to])
+			if err != nil {
+				log.Printf("err: %v\n", err)
+				return nil, err
+			}
+			for _, from := range links {
+				fromIndex := int(from)
+				if _, ok := (*start)[fromIndex]; ok {
+					return []int{fromIndex, to}, nil
 				} else {
-					nextGoals[from] = struct{}{}
+					nextGoals[fromIndex] = struct{}{}
 				}
 			}
 		}
@@ -110,11 +128,42 @@ func (w *Wikipedia) search(start, goal *map[int]struct{}, depth int) ([]int, err
 		if err != nil {
 			return nil, err
 		}
-		for _, index := range w.forwardLinks[way[len(way)-1]] {
-			if _, ok := (*goal)[index]; ok {
-				return append(way, index), nil
+		links, err := w.forwardLinks(w.pages[way[len(way)-1]])
+		if err != nil {
+			return nil, err
+		}
+		for _, to := range links {
+			toIndex := int(to)
+			if _, ok := (*goal)[toIndex]; ok {
+				return append(way, toIndex), nil
 			}
 		}
 	}
 	return nil, NotFound
+}
+
+func (w *Wikipedia) forwardLinks(page core.Page) ([]int32, error) {
+	links := make([]int32, page.ForwardLinkLength, page.ForwardLinkLength)
+	_, err := w.linkFile.Seek(int64(page.ForwardLinkIndex) * 4, 0)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Read(w.linkFile, binary.LittleEndian, links)
+	if err != nil {
+		return nil, err
+	}
+	return links, nil
+}
+
+func (w *Wikipedia) backwardLinks(page core.Page) ([]int32, error) {
+	links := make([]int32, page.BackwardLinkLength, page.BackwardLinkLength)
+	_, err := w.linkFile.Seek(int64(page.BackwardLinkIndex) * 4, 0)
+	if err != nil {
+		return nil, err
+	}
+	err = binary.Read(w.linkFile, binary.LittleEndian, links)
+	if err != nil {
+		return nil, err
+	}
+	return links, nil
 }

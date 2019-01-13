@@ -43,7 +43,6 @@ func (cli *CLI) Run(pageSQLFile, pageLinkSQLFile, outDir string) int {
 	flag.Parse()
 	//walk()
 	var pages []core.Page
-	var pageLinks []uint64
 	idToIndices := make(map[int]int)
 	titleToIndices := make(map[string]int)
 	pageFile := path.Join(outDir, "title.dat")
@@ -51,8 +50,8 @@ func (cli *CLI) Run(pageSQLFile, pageLinkSQLFile, outDir string) int {
 		fmt.Fprintf(cli.ErrStream, "Load \"%s\".\n", pageFile)
 		pages = core.LoadPages(pageFile)
 	} else {
-		fmt.Fprintf(cli.ErrStream, "Create \"%s\".\n", pageFile)
-		pages = generatePages(pageSQLFile, pageFile)
+		fmt.Fprintf(cli.ErrStream, "Load \"%s\".\n", pageSQLFile)
+		pages = loadPages(pageSQLFile)
 	}
 
 	for i, page := range pages {
@@ -71,13 +70,13 @@ func (cli *CLI) Run(pageSQLFile, pageLinkSQLFile, outDir string) int {
 
 	pageLinkFile := path.Join(outDir, "link.dat")
 	if _, err := os.Stat(pageLinkFile); err == nil {
-		fmt.Fprintf(cli.ErrStream, "Load \"%s\".\n", pageLinkFile)
-		pageLinks = loadPageLinks(pageLinkFile)
+		fmt.Fprintf(cli.ErrStream, "Skip \"%s\".\n", pageLinkFile)
 	} else {
 		fmt.Fprintf(cli.ErrStream, "Create \"%s\".\n", pageLinkFile)
-		pageLinks = generatePageLinks(pageLinkSQLFile, pageLinkFile, idToIndices, titleToIndices)
+		linkLength := generatePageLinks(pageLinkSQLFile, pageLinkFile, pages, idToIndices, titleToIndices)
+		fmt.Fprintf(cli.ErrStream, "%v links loaded.\n", linkLength)
+		generatePages(pageFile, pages)
 	}
-	fmt.Printf("%d pageLinks.\n", len(pageLinks))
 
 	return ExitCodeOK
 }
@@ -141,7 +140,7 @@ func parsePageStatement(stmt *sqlparser.Insert) ([]core.Page, error) {
 }
 
 // Import page array from sql file and generate new CSV file.
-func generatePages(in string, out string) []core.Page {
+func loadPages(in string) []core.Page {
 	var allPages []core.Page
 	file, err := os.Open(in)
 	if err != nil {
@@ -153,12 +152,6 @@ func generatePages(in string, out string) []core.Page {
 		panic(err)
 	}
 	tokens := sqlparser.NewTokenizer(reader)
-	fp, err := os.Create(out)
-	if err != nil {
-		panic(err)
-	}
-	defer fp.Close()
-	writer := csv.NewWriter(bufio.NewWriter(fp))
 	for {
 		statement, err := sqlparser.ParseNext(tokens)
 		if err == io.EOF {
@@ -170,15 +163,9 @@ func generatePages(in string, out string) []core.Page {
 			if err != nil {
 				panic(err)
 			}
-			for _, page := range pages {
-				if err := writer.Write([]string{strconv.Itoa(page.Id), strconv.FormatBool(page.IsRedirect), page.Title}); err != nil {
-					panic(err)
-				}
-			}
 			allPages = append(allPages, pages...)
 		}
 	}
-	writer.Flush()
 	return allPages
 }
 
@@ -266,8 +253,10 @@ func parsePageLinkStatement(stmt *sqlparser.Insert) ([]pageLink, error) {
 	return pagelinks, err
 }
 
-func generatePageLinks(in string, out string, idToIndices map[int]int, titleToIndices map[string]int) []uint64 {
-	var allLinks []uint64
+func generatePageLinks(in string, out string, pages []core.Page, idToIndices map[int]int, titleToIndices map[string]int) uint64 {
+	forwardLinks := make([][]int, len(pages), len(pages))
+	backwardLinks := make([][]int, len(pages), len(pages))
+	var linkLength uint64 = 0
 	file, err := os.Open(in)
 	if err != nil {
 		panic(err)
@@ -278,12 +267,6 @@ func generatePageLinks(in string, out string, idToIndices map[int]int, titleToIn
 		panic(err)
 	}
 	tokens := sqlparser.NewTokenizer(reader)
-	fp, err := os.Create(out)
-	defer fp.Close()
-	if err != nil {
-		panic(err)
-	}
-	writer := bufio.NewWriter(fp)
 	for {
 		statement, err := sqlparser.ParseNext(tokens)
 		if err == io.EOF {
@@ -297,35 +280,88 @@ func generatePageLinks(in string, out string, idToIndices map[int]int, titleToIn
 			for _, pageLink := range pageLinks {
 				if toIndex, ok := titleToIndices[pageLink.title]; ok {
 					if fromIndex, ok := idToIndices[pageLink.from]; ok {
-						value := uint64(fromIndex)<<32 | uint64(toIndex)
-						binary.Write(writer, binary.LittleEndian, value)
-						allLinks = append(allLinks, value)
+						forwardLinks[fromIndex] = append(forwardLinks[fromIndex], toIndex)
+						backwardLinks[toIndex] = append(backwardLinks[toIndex], fromIndex)
+						linkLength++
 					}
 				}
 			}
 		}
 	}
-	writer.Flush()
-	return allLinks
-}
-
-func loadPageLinks(in string) []uint64 {
-	var value uint64
-	var allLinks []uint64
-	file, err := os.Open(in)
+	fp, err := os.Create(out)
+	defer fp.Close()
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
-	reader := bufio.NewReader(file)
-	for {
-		err := binary.Read(reader, binary.LittleEndian, &value)
-		if err != io.EOF {
-			allLinks = append(allLinks, value)
-			break
-		} else {
+
+	linkIndex := 0
+	writer := bufio.NewWriter(fp)
+	for i, links := range forwardLinks {
+		pages[i].ForwardLinkIndex = linkIndex
+		pages[i].ForwardLinkLength = len(links)
+		for _, toIndex := range links {
+			err := binary.Write(writer, binary.LittleEndian, uint32(toIndex))
+			if err != nil {
+				panic(err)
+			}
+		}
+		linkIndex += len(links)
+	}
+	for i, links := range backwardLinks {
+		pages[i].BackwardLinkIndex = linkIndex
+		pages[i].BackwardLinkLength = len(links)
+		for _, fromIndex := range links {
+			err := binary.Write(writer, binary.LittleEndian, uint32(fromIndex))
+			if err != nil {
+				panic(err)
+			}
+		}
+		linkIndex += len(links)
+	}
+	writer.Flush()
+	return linkLength
+}
+
+func generatePages(out string, pages []core.Page) {
+	fp, err := os.Create(out)
+	if err != nil {
+		panic(err)
+	}
+	defer fp.Close()
+	writer := csv.NewWriter(bufio.NewWriter(fp))
+	for _, page := range pages {
+		if err := writer.Write([]string{
+			strconv.Itoa(page.Id),
+			strconv.FormatBool(page.IsRedirect),
+			page.Title,
+			strconv.Itoa(page.ForwardLinkIndex),
+			strconv.Itoa(page.ForwardLinkLength),
+			strconv.Itoa(page.BackwardLinkIndex),
+			strconv.Itoa(page.BackwardLinkLength),
+		}); err != nil {
 			panic(err)
 		}
 	}
-	return allLinks
+	writer.Flush()
 }
+
+//func loadPageLinks(in string) []uint64 {
+//	var value uint64
+//	var allLinks []uint64
+//	file, err := os.Open(in)
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer file.Close()
+//	reader := bufio.NewReader(file)
+//	for {
+//		err := binary.Read(reader, binary.LittleEndian, &value)
+//		if err != io.EOF {
+//			allLinks = append(allLinks, value)
+//			break
+//		} else {
+//			panic(err)
+//		}
+//	}
+//	return allLinks
+//}
