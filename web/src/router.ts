@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import Vuex from 'vuex';
 import Router, { Route } from 'vue-router';
 import Home from './views/Home.vue';
 import Search from './views/Search.vue';

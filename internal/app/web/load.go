@@ -8,18 +8,20 @@ import (
 	"strconv"
 )
 
-func Load(titleFile, titleIndicesFile, linkFile string) Wikipedia {
+func Load(titleFile, titleIndicesFile, linkFile string) (Wikipedia, error) {
+	var w Wikipedia
 	pages := core.LoadPages(titleFile)
 	lowercaseTitleToIndices := loadLowercaseTitleToIndices(titleIndicesFile)
 	links, err := os.Open(linkFile)
 	if err != nil {
-		panic(err)
+		return w, err
 	}
-	return Wikipedia{
+	w = Wikipedia{
 		pages: pages,
 		lowercaseTitleToIndices: lowercaseTitleToIndices,
 		linkFile: links,
 	}
+	return w, nil
 }
 
 func loadLowercaseTitleToIndices(in string) map[string][]int {

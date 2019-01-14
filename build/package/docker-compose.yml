@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   web:
-    image: pediaroute
+    image: mtgto/pediaroute:latest
     ports:
       - 9000:9000
     volumes:
@@ -11,9 +11,8 @@ services:
         read_only: true
         consistency: cached
     environment:
-      TITLE_FILE: /data/title.dat
-      TITLE_INDICES_FILE: /data/titleIndices.dat
-      LINK_FILE: /data/link.dat
+      JA: /data/ja
+      EN: /data/en
 volumes:
   pediaroute-data:
     external:

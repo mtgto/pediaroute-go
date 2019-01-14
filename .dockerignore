@@ -1,5 +1,7 @@
 .idea
 *.dat
+en/
+ja/
 build
 vendor
 web/dist

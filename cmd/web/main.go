@@ -6,46 +6,56 @@ import (
 	"github.com/mtgto/pediaroute-go/internal/app/web"
 	"github.com/rakyll/statik/fs"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"path"
+	"time"
+)
+
+/**
+ * Error code of API
+ */
+const (
+	NoError = iota
+	NotFoundFrom
+	NotFoundTo
+	NotFoundRoute
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	var wikipedia web.Wikipedia
+	wikipedias := make(map[string]web.Wikipedia)
 
 	var (
-		titleFile = flag.String("ip", "title.dat", "File path of titles")
-		titleIndicesFile = flag.String("is", "titleIndices.dat", "File path of same titles")
-		linkFile = flag.String("il", "link.dat", "File path of links")
+		japaneseDirectory = flag.String("ja", "ja", "Directory path of Japanese data")
+		englishDirectory = flag.String("en", "en", "Directory path of English data")
 	)
 
 	flag.Parse()
 	// overwrite by environment variables
-	if file, ok := os.LookupEnv("TITLE_FILE"); ok {
-		titleFile = &file
+	if dir, ok := os.LookupEnv("JA"); ok {
+		japaneseDirectory = &dir
 	}
-	log.Printf("title file: %v\n", *titleFile)
-	if file, ok := os.LookupEnv("TITLE_INDICES_FILE"); ok {
-		titleIndicesFile = &file
+	if dir, ok := os.LookupEnv("EN"); ok {
+		englishDirectory = &dir
 	}
-	log.Printf("title indices file: %v\n", *titleIndicesFile)
-	if file, ok := os.LookupEnv("LINK_FILE"); ok {
-		linkFile = &file
-	}
-	log.Printf("link file: %v\n", *linkFile)
 
-	if !isFileExists(*titleFile) {
-		log.Fatalf("Title file does not exists: %v", *titleFile)
+	for lang, langDirectory := range map[string]string{"ja": *japaneseDirectory, "en": *englishDirectory} {
+		titleFile := path.Join(langDirectory, "title.dat")
+		titleIndicesFile := path.Join(langDirectory, "titleIndices.dat")
+		linkFile := path.Join(langDirectory, "link.dat")
+		log.Printf("Start loading for language %v\n", lang)
+		wikipedia, err := web.Load(titleFile, titleIndicesFile, linkFile)
+		if err != nil {
+			log.Printf("Failed to load for lang %v: %v", lang, err)
+		} else {
+			wikipedias[lang] = wikipedia
+		}
+		log.Printf("Loaded for language %v\n", lang)
 	}
-	if !isFileExists(*titleIndicesFile) {
-		log.Fatalf("Title indices file does not exists: %v", *titleIndicesFile)
-	}
-	if !isFileExists(*linkFile) {
-		log.Fatalf("Link file does not exists: %v", *linkFile)
-	}
-	log.Println("Data loading...")
-	wikipedia = web.Load(*titleFile, *titleIndicesFile, *linkFile)
+
 	log.Println("Data loaded.")
 
 	statikFS, err := fs.New()
@@ -64,35 +74,40 @@ func main() {
 
 	type SearchResult struct {
 		Route []string `json:"route"`
-		Error string `json:"error"`
+		Error int `json:"error"`
 	}
 
 	http.HandleFunc("/api/search", func (w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			var pair Pair
 			var result SearchResult
-			err := json.NewDecoder(r.Body).Decode(&pair)
-			if err != nil {
-				http.Error(w, "Bad Request", http.StatusBadRequest)
-				return
-			}
-			w.Header().Set("Content-Type", "application/json")
-			if !wikipedia.IsWordExists(pair.From) {
-				result = SearchResult{nil, pair.From + "というページがないみたい"}
-			} else if !wikipedia.IsWordExists(pair.To) {
-				result = SearchResult{nil, pair.To + "というページがないみたい"}
-			} else {
-				log.Printf("Search from \"%v\" to \"%v\"\n", pair.From, pair.To)
-				route := wikipedia.Search(pair.From, pair.To)
-				if route != nil {
-					log.Printf("Found a route: %v\n", route)
-					result = SearchResult{route, ""}
-				} else {
-					log.Printf("Not found a route from \"%v\" to \"%v\"\n", pair.From, pair.To)
-					result = SearchResult{nil, "6回のリンクじゃ見つからなかった…ごめんね！"}
+			lang := r.FormValue("lang")
+			if wikipedia, ok := wikipedias[lang]; ok {
+				err := json.NewDecoder(r.Body).Decode(&pair)
+				if err != nil {
+					http.Error(w, "Bad Request", http.StatusBadRequest)
+					return
 				}
+				w.Header().Set("Content-Type", "application/json")
+				if !wikipedia.IsWordExists(pair.From) {
+					result = SearchResult{nil, NotFoundFrom}
+				} else if !wikipedia.IsWordExists(pair.To) {
+					result = SearchResult{nil, NotFoundTo}
+				} else {
+					log.Printf("Language: %v, Search from \"%v\" to \"%v\"\n", lang, pair.From, pair.To)
+					route := wikipedia.Search(pair.From, pair.To)
+					if route != nil {
+						log.Printf("Found a route: %v\n", route)
+						result = SearchResult{route, NoError}
+					} else {
+						log.Printf("Not found a route from \"%v\" to \"%v\"\n", pair.From, pair.To)
+						result = SearchResult{nil, NotFoundRoute}
+					}
+				}
+				err = json.NewEncoder(w).Encode(result)
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
 			}
-			err = json.NewEncoder(w).Encode(result)
 		} else {
 			http.Error(w, "Not Found", http.StatusNotFound)
 		}
@@ -100,15 +115,17 @@ func main() {
 
 	http.HandleFunc("/api/random", func (w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			w.Header().Set("Content-Type", "application/json")
-			from := wikipedia.GetRandomPage()
-			to := wikipedia.GetRandomPage()
-			log.Printf("Random pages from \"%v\" to \"%v\"\n", from, to)
-			pair := Pair{from, to}
-			err := json.NewEncoder(w).Encode(pair)
-			if err != nil {
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
+			lang := r.FormValue("lang")
+			if wikipedia, ok := wikipedias[lang]; ok {
+				title := wikipedia.GetRandomPage()
+				w.Header().Set("Content-Type", "application/json")
+				log.Printf("Language: %v, Random page \"%v\"\n", lang, title)
+				err := json.NewEncoder(w).Encode(title)
+				if err != nil {
+					log.Printf("Error while encoding json: %v\n", err)
+				}
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
 			}
 		} else {
 			http.Error(w, "Not Found", http.StatusNotFound)
