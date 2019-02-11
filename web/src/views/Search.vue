@@ -22,7 +22,7 @@
       <ul>
         <li>
           <router-link
-            :to="{path: '/search', query: {wordFrom: wordTo, wordTo: wordFrom}}"
+            :to="{path: '/search', query: {lang: this.$i18n.locale, wordFrom: wordTo, wordTo: wordFrom}}"
           >{{ $t('message.searchInReverse', { wordFrom, wordTo })}}</router-link>
         </li>
         <li v-if="route">
