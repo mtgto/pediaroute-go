@@ -7,13 +7,13 @@ import (
 )
 
 type Page struct {
-	Id                 int
+	Id                 int32
 	Title              string
 	IsRedirect         bool
-	ForwardLinkIndex   int
-	ForwardLinkLength  int
-	BackwardLinkIndex  int
-	BackwardLinkLength int
+	ForwardLinkIndex   int32
+	ForwardLinkLength  uint32
+	BackwardLinkIndex  int32
+	BackwardLinkLength uint32
 }
 
 func LoadPages(in string) []Page {
@@ -54,13 +54,13 @@ func LoadPages(in string) []Page {
 			panic(err)
 		}
 		pages = append(pages, Page{
-			Id:                 pageID,
+			Id:                 int32(pageID),
 			Title:              record[2],
 			IsRedirect:         pageIsRedirect,
-			ForwardLinkIndex:   forwardLinkIndex,
-			ForwardLinkLength:  forwardLinkLength,
-			BackwardLinkIndex:  backwardLinkIndex,
-			BackwardLinkLength: backwardLinkLength,
+			ForwardLinkIndex:   int32(forwardLinkIndex),
+			ForwardLinkLength:  uint32(forwardLinkLength),
+			BackwardLinkIndex:  int32(backwardLinkIndex),
+			BackwardLinkLength: uint32(backwardLinkLength),
 		})
 	}
 	return pages

@@ -55,7 +55,7 @@ func (cli *CLI) Run(pageSQLFile, pageLinkSQLFile, outDir string) int {
 	}
 
 	for i, page := range pages {
-		idToIndices[page.Id] = i
+		idToIndices[int(page.Id)] = i
 		titleToIndices[page.Title] = i
 	}
 	fmt.Fprintf(cli.ErrStream, "%d pages.\n", len(pages))
@@ -127,7 +127,7 @@ func parsePageStatement(stmt *sqlparser.Insert) ([]core.Page, error) {
 					panic(fmt.Sprintf("Parse error %s", err))
 				}
 				if pageNamespace == 0 {
-					pages = append(pages, core.Page{Id: pageID, Title: pageTitle, IsRedirect: pageIsRedirect != 0})
+					pages = append(pages, core.Page{Id: int32(pageID), Title: pageTitle, IsRedirect: pageIsRedirect != 0})
 				}
 			}
 			columnIndex++
@@ -297,8 +297,8 @@ func generatePageLinks(in string, out string, pages []core.Page, idToIndices map
 	linkIndex := 0
 	writer := bufio.NewWriter(fp)
 	for i, links := range forwardLinks {
-		pages[i].ForwardLinkIndex = linkIndex
-		pages[i].ForwardLinkLength = len(links)
+		pages[i].ForwardLinkIndex = int32(linkIndex)
+		pages[i].ForwardLinkLength = uint32(len(links))
 		for _, toIndex := range links {
 			err := binary.Write(writer, binary.LittleEndian, uint32(toIndex))
 			if err != nil {
@@ -308,8 +308,8 @@ func generatePageLinks(in string, out string, pages []core.Page, idToIndices map
 		linkIndex += len(links)
 	}
 	for i, links := range backwardLinks {
-		pages[i].BackwardLinkIndex = linkIndex
-		pages[i].BackwardLinkLength = len(links)
+		pages[i].BackwardLinkIndex = int32(linkIndex)
+		pages[i].BackwardLinkLength = uint32(len(links))
 		for _, fromIndex := range links {
 			err := binary.Write(writer, binary.LittleEndian, uint32(fromIndex))
 			if err != nil {
@@ -331,13 +331,13 @@ func generatePages(out string, pages []core.Page) {
 	writer := csv.NewWriter(bufio.NewWriter(fp))
 	for _, page := range pages {
 		if err := writer.Write([]string{
-			strconv.Itoa(page.Id),
+			strconv.Itoa(int(page.Id)),
 			strconv.FormatBool(page.IsRedirect),
 			page.Title,
-			strconv.Itoa(page.ForwardLinkIndex),
-			strconv.Itoa(page.ForwardLinkLength),
-			strconv.Itoa(page.BackwardLinkIndex),
-			strconv.Itoa(page.BackwardLinkLength),
+			strconv.Itoa(int(page.ForwardLinkIndex)),
+			strconv.Itoa(int(page.ForwardLinkLength)),
+			strconv.Itoa(int(page.BackwardLinkIndex)),
+			strconv.Itoa(int(page.BackwardLinkLength)),
 		}); err != nil {
 			panic(err)
 		}
