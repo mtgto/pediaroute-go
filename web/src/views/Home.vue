@@ -90,7 +90,7 @@ export default Vue.extend({
         .catch(error => console.log(error));
     },
     search() {
-      this.$router.push({ path: '/search', query: { wordFrom: this.wordFrom, wordTo: this.wordTo } });
+      this.$router.push({ path: '/search', query: { lang: this.$i18n.locale, wordFrom: this.wordFrom, wordTo: this.wordTo } });
     },
   },
 });

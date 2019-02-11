@@ -27,7 +27,7 @@
         </li>
         <li v-if="route">
           <a
-            v-bind:href="`https://twitter.com/home?status=「${wordFrom}」から「${wordTo}」へはWikipediaで${route.length-1}リンクで行けるよ！ ${encodeURIComponent(`https://pediaroute.com/search?wordFrom=${encodeURIComponent(wordFrom)}&wordTo=${encodeURIComponent(wordTo)}`)} ${encodeURIComponent('#pediaroute')}`"
+            v-bind:href="`https://twitter.com/home?status=「${wordFrom}」から「${wordTo}」へはWikipediaで${route.length-1}リンクで行けるよ！ ${encodeURIComponent(`https://pediaroute.com/search?lang=${encodeURI(this.$i18n.locale)}&wordFrom=${encodeURIComponent(wordFrom)}&wordTo=${encodeURIComponent(wordTo)}`)} ${encodeURIComponent('#pediaroute')}`"
             target="_blank"
           >{{ $t('message.tweet') }}</a>
         </li>

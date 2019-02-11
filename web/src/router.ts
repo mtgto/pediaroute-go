@@ -1,8 +1,8 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
 import Router, { Route } from 'vue-router';
 import Home from './views/Home.vue';
 import Search from './views/Search.vue';
+import { i18n } from './i18n';
 
 Vue.use(Router);
 
@@ -45,6 +45,9 @@ const router = new Router({
 });
 
 router.beforeEach((to: Route, from: Route, next) => {
+  if (typeof to.query.lang === 'string') {
+    i18n.locale = to.query.lang;
+  }
   document.title = to.meta.title(to);
   next();
 });
