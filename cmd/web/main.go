@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"time"
 )
 
@@ -57,6 +58,7 @@ func main() {
 	}
 
 	log.Println("Data loaded.")
+	printMemory()
 
 	statikFS, err := fs.New()
 	if err != nil {
@@ -136,6 +138,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func printMemory() {
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	log.Printf("Memory: %+v", mem.HeapAlloc)
 }
 
 func isFileExists(file string) bool {
