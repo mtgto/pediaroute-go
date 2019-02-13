@@ -24,8 +24,8 @@ func Load(titleFile, titleIndicesFile, linkFile string) (Wikipedia, error) {
 	return w, nil
 }
 
-func loadLowercaseTitleToIndices(in string) map[string][]int {
-	lowercaseTitleToIndices := make(map[string][]int, 0)
+func loadLowercaseTitleToIndices(in string) map[string][]int32 {
+	lowercaseTitleToIndices := make(map[string][]int32, 0)
 	file, err := os.Open(in)
 	if err != nil {
 		panic(err)
@@ -40,14 +40,14 @@ func loadLowercaseTitleToIndices(in string) map[string][]int {
 		} else if err != nil {
 			panic(err)
 		}
-		lowercaseTitle := record[0]
-		indices := make([]int, 0, len(record)-1)
+		lowercaseTitle := core.CopyString(record[0])
+		indices := make([]int32, 0, len(record)-1)
 		for _, indexStr := range record[1:] {
 			index, err := strconv.Atoi(indexStr)
 			if err != nil {
 				panic(err)
 			}
-			indices = append(indices, index)
+			indices = append(indices, int32(index))
 		}
 		lowercaseTitleToIndices[lowercaseTitle] = indices
 	}

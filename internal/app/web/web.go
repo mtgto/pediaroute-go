@@ -13,7 +13,7 @@ import (
 // Data structure
 type Wikipedia struct {
 	pages                   []core.Page
-	lowercaseTitleToIndices map[string][]int // map from lowercase of title to index
+	lowercaseTitleToIndices map[string][]int32 // map from lowercase of title to index
 	linkFile                *os.File
 }
 
@@ -63,8 +63,8 @@ func (w *Wikipedia) GetRandomPage() string {
 	}
 }
 
-func (w *Wikipedia) generateWordSet(word string) map[int]struct{} {
-	set := make(map[int]struct{}, 1)
+func (w *Wikipedia) generateWordSet(word string) map[int32]struct{} {
+	set := make(map[int32]struct{}, 1)
 	if indices, ok := w.lowercaseTitleToIndices[strings.ToLower(word)]; ok {
 		for _, index := range indices {
 			set[index] = struct{}{}
@@ -73,21 +73,21 @@ func (w *Wikipedia) generateWordSet(word string) map[int]struct{} {
 	return set
 }
 
-func (w *Wikipedia) search(start, goal *map[int]struct{}, depth int) ([]int, error) {
+func (w *Wikipedia) search(start, goal *map[int32]struct{}, depth int) ([]int32, error) {
 	if depth >= MaxDepth {
 		return nil, NotFound
 	}
 	if len(*start) < len(*goal) {
-		nextStarts := make(map[int]struct{}, 0)
+		nextStarts := make(map[int32]struct{}, 0)
 		for from, _ := range *start {
 			links, err := w.forwardLinks(w.pages[from])
 			if err != nil {
 				return nil, err
 			}
 			for _, to := range links {
-				toIndex := int(to)
+				toIndex := to
 				if _, ok := (*goal)[toIndex]; ok {
-					return []int{from, toIndex}, nil
+					return []int32{from, toIndex}, nil
 				} else {
 					nextStarts[toIndex] = struct{}{}
 				}
@@ -102,13 +102,13 @@ func (w *Wikipedia) search(start, goal *map[int]struct{}, depth int) ([]int, err
 			return nil, err
 		}
 		for _, from := range links {
-			fromIndex := int(from)
+			fromIndex := from
 			if _, ok := (*start)[fromIndex]; ok {
-				return append([]int{fromIndex}, way...), nil
+				return append([]int32{fromIndex}, way...), nil
 			}
 		}
 	} else {
-		nextGoals := make(map[int]struct{}, 0)
+		nextGoals := make(map[int32]struct{}, 0)
 		for to, _ := range *goal {
 			links, err := w.backwardLinks(w.pages[to])
 			if err != nil {
@@ -116,9 +116,9 @@ func (w *Wikipedia) search(start, goal *map[int]struct{}, depth int) ([]int, err
 				return nil, err
 			}
 			for _, from := range links {
-				fromIndex := int(from)
+				fromIndex := from
 				if _, ok := (*start)[fromIndex]; ok {
-					return []int{fromIndex, to}, nil
+					return []int32{fromIndex, to}, nil
 				} else {
 					nextGoals[fromIndex] = struct{}{}
 				}
@@ -133,7 +133,7 @@ func (w *Wikipedia) search(start, goal *map[int]struct{}, depth int) ([]int, err
 			return nil, err
 		}
 		for _, to := range links {
-			toIndex := int(to)
+			toIndex := to
 			if _, ok := (*goal)[toIndex]; ok {
 				return append(way, toIndex), nil
 			}

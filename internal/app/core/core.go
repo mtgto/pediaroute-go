@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/csv"
+	"io"
 	"os"
 	"strconv"
 )
@@ -23,12 +24,12 @@ func LoadPages(in string) []Page {
 	}
 	defer file.Close()
 	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
-	if err != nil {
-		panic(err)
-	}
-	pages := make([]Page, 0, len(records))
-	for _, record := range records {
+	pages := make([]Page, 0)
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
 		pageID, err := strconv.Atoi(record[0])
 		if err != nil {
 			panic(err)
@@ -55,7 +56,7 @@ func LoadPages(in string) []Page {
 		}
 		pages = append(pages, Page{
 			Id:                 int32(pageID),
-			Title:              record[2],
+			Title:              CopyString(record[2]),
 			IsRedirect:         pageIsRedirect,
 			ForwardLinkIndex:   int32(forwardLinkIndex),
 			ForwardLinkLength:  uint32(forwardLinkLength),
@@ -64,4 +65,11 @@ func LoadPages(in string) []Page {
 		})
 	}
 	return pages
+}
+
+// deepcopy
+func CopyString(s string) string {
+	bytes := make([]byte, len(s))
+	copy(bytes, s)
+	return string(bytes)
 }
