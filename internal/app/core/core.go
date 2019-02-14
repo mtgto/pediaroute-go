@@ -27,8 +27,11 @@ func LoadPages(pageCount uint, in string) []Page {
 	reader.FieldsPerRecord = 7
 	reader.ReuseRecord = true
 	pages := make([]Page, 0, pageCount)
-	for {
-		record, err := reader.Read()
+	records, err := reader.ReadAll()
+	if err != nil {
+		panic(err)
+	}
+	for _, record := range records {
 		if err == io.EOF {
 			break
 		}
