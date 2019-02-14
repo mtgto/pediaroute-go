@@ -8,9 +8,9 @@ import (
 	"strconv"
 )
 
-func Load(titleFile, titleIndicesFile, linkFile string) (Wikipedia, error) {
+func Load(pageCount uint, titleFile, titleIndicesFile, linkFile string) (Wikipedia, error) {
 	var w Wikipedia
-	pages := core.LoadPages(titleFile)
+	pages := core.LoadPages(pageCount, titleFile)
 	lowercaseTitleToIndices := loadLowercaseTitleToIndices(titleIndicesFile)
 	links, err := os.Open(linkFile)
 	if err != nil {

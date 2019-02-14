@@ -17,7 +17,7 @@ type Page struct {
 	BackwardLinkLength uint32
 }
 
-func LoadPages(in string) []Page {
+func LoadPages(pageCount uint, in string) []Page {
 	file, err := os.Open(in)
 	if err != nil {
 		panic(err)
@@ -26,7 +26,7 @@ func LoadPages(in string) []Page {
 	reader := csv.NewReader(file)
 	reader.FieldsPerRecord = 7
 	reader.ReuseRecord = true
-	pages := make([]Page, 0)
+	pages := make([]Page, 0, pageCount)
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {

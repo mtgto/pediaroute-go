@@ -48,7 +48,7 @@ func (cli *CLI) Run(pageSQLFile, pageLinkSQLFile, outDir string) int {
 	pageFile := path.Join(outDir, "title.dat")
 	if _, err := os.Stat(pageFile); err == nil {
 		fmt.Fprintf(cli.ErrStream, "Load \"%s\".\n", pageFile)
-		pages = core.LoadPages(pageFile)
+		pages = core.LoadPages(0, pageFile)
 	} else {
 		fmt.Fprintf(cli.ErrStream, "Load \"%s\".\n", pageSQLFile)
 		pages = loadPages(pageSQLFile)

@@ -43,7 +43,7 @@ func main() {
 		log.Fatalf("Link file does not exists: %v", *linkFile)
 	}
 	log.Println("Data loading...")
-	wikipedia, err := web.Load(*titleFile, *titleIndicesFile, *linkFile)
+	wikipedia, err := web.Load(0, *titleFile, *titleIndicesFile, *linkFile)
 	if err != nil {
 		panic(err)
 	}
