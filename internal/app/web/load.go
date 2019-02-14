@@ -33,6 +33,7 @@ func loadLowercaseTitleToIndices(in string) map[string][]int32 {
 	defer file.Close()
 	reader := csv.NewReader(file)
 	reader.FieldsPerRecord = -1
+	reader.ReuseRecord = true
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {

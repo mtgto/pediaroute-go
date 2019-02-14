@@ -24,6 +24,8 @@ func LoadPages(in string) []Page {
 	}
 	defer file.Close()
 	reader := csv.NewReader(file)
+	reader.FieldsPerRecord = 7
+	reader.ReuseRecord = true
 	pages := make([]Page, 0)
 	for {
 		record, err := reader.Read()
