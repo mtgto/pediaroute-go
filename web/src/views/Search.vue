@@ -10,8 +10,8 @@
     </header>
     <article v-if="route">
       <ol start="0">
-        <li v-for="word in route" v-bind:key="word">
-          <a v-bind:href="`http://ja.wikipedia.org/wiki/${word}`">{{word}}</a>
+        <li v-for="(word, index) in route" v-bind:key="`${index}`">
+          <a v-bind:href="$t('message.wikipediaUrl', { word })">{{word}}</a>
         </li>
       </ol>
     </article>
@@ -26,16 +26,10 @@
           >{{ $t('message.searchInReverse', { wordFrom, wordTo })}}</router-link>
         </li>
         <li v-if="route">
-          <a
-            v-bind:href="`https://twitter.com/home?status=「${wordFrom}」から「${wordTo}」へはWikipediaで${route.length-1}リンクで行けるよ！ ${encodeURIComponent(`https://pediaroute.com/search?lang=${encodeURI(this.$i18n.locale)}&wordFrom=${encodeURIComponent(wordFrom)}&wordTo=${encodeURIComponent(wordTo)}`)} ${encodeURIComponent('#pediaroute')}`"
-            target="_blank"
-          >{{ $t('message.tweet') }}</a>
+          <a v-bind:href="tweetFoundUrl(route)" target="_blank">{{ $t('message.tweet') }}</a>
         </li>
         <li v-else>
-          <a
-            v-bind:href="`https://twitter.com/home?status=「${wordFrom}」から「${wordTo}」へはWikipediaで6回のリンクじゃいけないみたい… ${encodeURIComponent('#pediaroute')}`"
-            target="_blank"
-          >{{ $t('message.tweet') }}</a>
+          <a v-bind:href="tweetNotFoundUrl()" target="_blank">{{ $t('message.tweet') }}</a>
         </li>
       </ul>
     </aside>
@@ -112,6 +106,31 @@ export default Vue.extend({
           }
           this.time = new Date().getTime() - start;
         });
+    },
+    tweetFoundUrl(route: string[]) {
+      return this.$i18n.t('message.tweetFind', this.$i18n.locale, {
+        wordFrom: this.wordFrom,
+        wordTo: this.wordTo,
+        length: `${this.route && route.length - 1}`,
+        link: `${encodeURIComponent(
+          `https://pediaroute.com/search?lang=${encodeURI(this.$i18n.locale)}&wordFrom=${encodeURIComponent(
+            this.wordFrom,
+          )}&wordTo=${encodeURIComponent(this.wordTo)}`,
+        )}`,
+        hashTag: encodeURIComponent('#pediaroute'),
+      });
+    },
+    tweetNotFoundUrl() {
+      return this.$i18n.t('message.tweetNotFound', this.$i18n.locale, {
+        wordFrom: this.wordFrom,
+        wordTo: this.wordTo,
+        link: `${encodeURIComponent(
+          `https://pediaroute.com/search?lang=${encodeURI(this.$i18n.locale)}&wordFrom=${encodeURIComponent(
+            this.wordFrom,
+          )}&wordTo=${encodeURIComponent(this.wordTo)}`,
+        )}`,
+        hashTag: encodeURIComponent('#pediaroute'),
+      });
     },
   },
 });

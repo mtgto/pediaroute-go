@@ -13,21 +13,21 @@ func main() {
 
 	var (
 		count = flag.Int("n", 10000, "Count of search")
-		titleFile = flag.String("ip", "title.dat", "File path of titles")
-		titleIndicesFile = flag.String("is", "titleIndices.dat", "File path of same titles")
+		pageFile = flag.String("ip", "page.dat", "File path of pages")
+		titleFile = flag.String("it", "title.dat", "File path of titles")
 		linkFile = flag.String("il", "link.dat", "File path of links")
 	)
 
 	flag.Parse()
 	// overwrite by environment variables
+	if file, ok := os.LookupEnv("PAGE_FILE"); ok {
+		pageFile = &file
+	}
+	log.Printf("page file: %v\n", *pageFile)
 	if file, ok := os.LookupEnv("TITLE_FILE"); ok {
 		titleFile = &file
 	}
 	log.Printf("title file: %v\n", *titleFile)
-	if file, ok := os.LookupEnv("TITLE_INDICES_FILE"); ok {
-		titleIndicesFile = &file
-	}
-	log.Printf("title indices file: %v\n", *titleIndicesFile)
 	if file, ok := os.LookupEnv("LINK_FILE"); ok {
 		linkFile = &file
 	}
@@ -36,14 +36,11 @@ func main() {
 	if !isFileExists(*titleFile) {
 		log.Fatalf("Title file does not exists: %v", *titleFile)
 	}
-	if !isFileExists(*titleIndicesFile) {
-		log.Fatalf("Title indices file does not exists: %v", *titleIndicesFile)
-	}
 	if !isFileExists(*linkFile) {
 		log.Fatalf("Link file does not exists: %v", *linkFile)
 	}
 	log.Println("Data loading...")
-	wikipedia, err := web.Load(0, *titleFile, *titleIndicesFile, *linkFile)
+	wikipedia, err := web.Load(0, *pageFile, *titleFile, *linkFile)
 	if err != nil {
 		panic(err)
 	}
@@ -51,8 +48,8 @@ func main() {
 
 	start := time.Now()
 	for i := 0; i < *count; i++ {
-		from := wikipedia.GetRandomPage()
-		to := wikipedia.GetRandomPage()
+		from, _ := wikipedia.GetRandomPage()
+		to, _ := wikipedia.GetRandomPage()
 		wikipedia.Search(from, to)
 	}
 	log.Printf("%v routes searched. %v seconds\n", *count, time.Since(start).Seconds())

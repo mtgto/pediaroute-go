@@ -7,13 +7,14 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sort"
 	"strings"
 )
 
 // Data structure
 type Wikipedia struct {
 	pages                   []core.Page
-	lowercaseTitleToIndices map[string][]int32 // map from lowercase of title to index
+	titleFile               *os.File
 	linkFile                *os.File
 }
 
@@ -24,27 +25,34 @@ const MaxDepth = 6
 func (w *Wikipedia) Search(from, to string) []string {
 	start := w.generateWordSet(from)
 	goal := w.generateWordSet(to)
+	log.Printf("start: %v, goal: %v\n", start, goal)
 	way, err := w.search(&start, &goal, 0)
 	if err != nil {
 		return nil
 	} else {
 		result := make([]string, len(way))
 		for i, index := range way {
-			result[i] = w.pages[index].Title
+			title, err := w.title(w.pages[index])
+			if err != nil {
+				log.Printf("err: %v", err)
+				return nil
+			}
+			result[i] = title
 		}
 		return result
 	}
 }
 
 func (w *Wikipedia) IsWordExists(word string) bool {
-	_, exists := w.lowercaseTitleToIndices[strings.ToLower(word)]
-	return exists
+	indices := w.generateWordSet(word)
+	return len(indices) > 0
 }
 
 // return whether word is only redirect page title
 func (w *Wikipedia) IsWordRedirect(word string) bool {
-	if indices, exists := w.lowercaseTitleToIndices[strings.ToLower(word)]; exists {
-		for _, index := range indices {
+	indices := w.generateWordSet(word)
+	if len(indices) > 0 {
+		for index, _ := range indices {
 			if !w.pages[index].IsRedirect {
 				return false
 			}
@@ -54,31 +62,65 @@ func (w *Wikipedia) IsWordRedirect(word string) bool {
 	return false
 }
 
-func (w *Wikipedia) GetRandomPage() string {
+func (w *Wikipedia) GetRandomPage() (string, error) {
 	for {
-		title := w.pages[rand.Intn(len(w.pages))].Title
+		title, err := w.title(w.pages[rand.Intn(len(w.pages))])
+		if err != nil {
+			return "", err
+		}
 		if !w.IsWordRedirect(title) {
-			return title
+			return title, nil
 		}
 	}
 }
 
-func (w *Wikipedia) generateWordSet(word string) map[int32]struct{} {
-	set := make(map[int32]struct{}, 1)
-	if indices, ok := w.lowercaseTitleToIndices[strings.ToLower(word)]; ok {
-		for _, index := range indices {
-			set[index] = struct{}{}
+func (w *Wikipedia) generateWordSet(word string) map[uint32]struct{} {
+	lowercaseWord := strings.ToLower(word)
+	set := make(map[uint32]struct{}, 0)
+	index := sort.Search(len(w.pages), func(i int) bool {
+		title, err := w.title(w.pages[i])
+		if err != nil {
+			log.Printf("Error while generateWordSet: %v", err)
+		}
+		return strings.ToLower(title) >= lowercaseWord
+	})
+	if index == len(w.pages) {
+		return set
+	}
+	set[uint32(index)] = struct{}{}
+	for i := index - 1; i >= 0; i -= 1 {
+		title, err := w.title(w.pages[i])
+		if err != nil {
+			log.Printf("Error while generateWordSet: %v", err)
+			continue
+		}
+		if strings.ToLower(title) == lowercaseWord {
+			set[uint32(i)] = struct{}{}
+		} else {
+			break
+		}
+	}
+	for i := index + 1; i < len(w.pages); i += 1 {
+		title, err := w.title(w.pages[i])
+		if err != nil {
+			log.Printf("Error while generateWordSet: %v", err)
+			continue
+		}
+		if strings.ToLower(title) == lowercaseWord {
+			set[uint32(i)] = struct{}{}
+		} else {
+			break
 		}
 	}
 	return set
 }
 
-func (w *Wikipedia) search(start, goal *map[int32]struct{}, depth int) ([]int32, error) {
+func (w *Wikipedia) search(start, goal *map[uint32]struct{}, depth int) ([]uint32, error) {
 	if depth >= MaxDepth {
 		return nil, NotFound
 	}
 	if len(*start) < len(*goal) {
-		nextStarts := make(map[int32]struct{}, 0)
+		nextStarts := make(map[uint32]struct{}, 0)
 		for from, _ := range *start {
 			links, err := w.forwardLinks(w.pages[from])
 			if err != nil {
@@ -87,7 +129,7 @@ func (w *Wikipedia) search(start, goal *map[int32]struct{}, depth int) ([]int32,
 			for _, to := range links {
 				toIndex := to
 				if _, ok := (*goal)[toIndex]; ok {
-					return []int32{from, toIndex}, nil
+					return []uint32{from, toIndex}, nil
 				} else {
 					nextStarts[toIndex] = struct{}{}
 				}
@@ -104,11 +146,11 @@ func (w *Wikipedia) search(start, goal *map[int32]struct{}, depth int) ([]int32,
 		for _, from := range links {
 			fromIndex := from
 			if _, ok := (*start)[fromIndex]; ok {
-				return append([]int32{fromIndex}, way...), nil
+				return append([]uint32{fromIndex}, way...), nil
 			}
 		}
 	} else {
-		nextGoals := make(map[int32]struct{}, 0)
+		nextGoals := make(map[uint32]struct{}, 0)
 		for to, _ := range *goal {
 			links, err := w.backwardLinks(w.pages[to])
 			if err != nil {
@@ -118,7 +160,7 @@ func (w *Wikipedia) search(start, goal *map[int32]struct{}, depth int) ([]int32,
 			for _, from := range links {
 				fromIndex := from
 				if _, ok := (*start)[fromIndex]; ok {
-					return []int32{fromIndex, to}, nil
+					return []uint32{fromIndex, to}, nil
 				} else {
 					nextGoals[fromIndex] = struct{}{}
 				}
@@ -142,9 +184,9 @@ func (w *Wikipedia) search(start, goal *map[int32]struct{}, depth int) ([]int32,
 	return nil, NotFound
 }
 
-func (w *Wikipedia) forwardLinks(page core.Page) ([]int32, error) {
-	links := make([]int32, page.ForwardLinkLength, page.ForwardLinkLength)
-	_, err := w.linkFile.Seek(int64(page.ForwardLinkIndex) * 4, 0)
+func (w *Wikipedia) forwardLinks(page core.Page) ([]uint32, error) {
+	links := make([]uint32, page.ForwardLinkLength, page.ForwardLinkLength)
+	_, err := w.linkFile.Seek(int64(page.ForwardLinkIndex)*4, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -155,9 +197,9 @@ func (w *Wikipedia) forwardLinks(page core.Page) ([]int32, error) {
 	return links, nil
 }
 
-func (w *Wikipedia) backwardLinks(page core.Page) ([]int32, error) {
-	links := make([]int32, page.BackwardLinkLength, page.BackwardLinkLength)
-	_, err := w.linkFile.Seek(int64(page.BackwardLinkIndex) * 4, 0)
+func (w *Wikipedia) backwardLinks(page core.Page) ([]uint32, error) {
+	links := make([]uint32, page.BackwardLinkLength, page.BackwardLinkLength)
+	_, err := w.linkFile.Seek(int64(page.BackwardLinkIndex)*4, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -166,4 +208,17 @@ func (w *Wikipedia) backwardLinks(page core.Page) ([]int32, error) {
 		return nil, err
 	}
 	return links, nil
+}
+
+func (w *Wikipedia) title(page core.Page) (string, error) {
+	_, err := w.titleFile.Seek(int64(page.TitleOffset), 0)
+	if err != nil {
+		return "", err
+	}
+	bytes := make([]byte, page.TitleLength)
+	_, err = w.titleFile.ReadAt(bytes, int64(page.TitleOffset))
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }

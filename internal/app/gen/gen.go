@@ -4,28 +4,29 @@ import (
 	"bufio"
 	"compress/gzip"
 	"encoding/binary"
-	"encoding/csv"
-	"flag"
+	"encoding/json"
 	"fmt"
 	"github.com/mtgto/pediaroute-go/internal/app/core"
+	"github.com/xwb1989/sqlparser"
 	"io"
+	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/xwb1989/sqlparser"
 )
 
-// 終了コード
-const (
-	ExitCodeOK = iota
-	ExitCodeParseFlagError
-)
-
-type CLI struct {
-	OutStream, ErrStream io.Writer
+type page struct {
+	id                 int32
+	title              string
+	titleLowercase     string
+	isRedirect         bool
+	forwardLinkIndex   uint32
+	forwardLinkLength  uint32
+	backwardLinkIndex  uint32
+	backwardLinkLength uint32
 }
 
 type pageLink struct {
@@ -36,58 +37,57 @@ type pageLink struct {
 
 type pageTitleToIndex struct {
 	title string
-	index int
+	index uint32
 }
 
-func (cli *CLI) Run(pageSQLFile, pageLinkSQLFile, outDir string) int {
-	flag.Parse()
-	//walk()
-	var pages []core.Page
-	idToIndices := make(map[int]int)
-	titleToIndices := make(map[string]int)
-	pageFile := path.Join(outDir, "title.dat")
-	if _, err := os.Stat(pageFile); err == nil {
-		fmt.Fprintf(cli.ErrStream, "Load \"%s\".\n", pageFile)
-		pages = core.LoadPages(0, pageFile)
-	} else {
-		fmt.Fprintf(cli.ErrStream, "Load \"%s\".\n", pageSQLFile)
-		pages = loadPages(pageSQLFile)
+func Run(languageId, pageSQLFile, pageLinkSQLFile, outDir string) error {
+	language := core.Language{
+		Id:        languageId,
+		PageFile:  "page.dat",
+		TitleFile: "title.dat",
+		LinkFile:  "link.dat",
 	}
+	var pages []page
+	idToIndices := make(map[int]uint32)
+	titleToIndices := make(map[string]uint32)
+	pageFile := path.Join(outDir, language.PageFile)
+	titleFile := path.Join(outDir, language.TitleFile)
+	log.Printf("Load \"%s\".\n", pageSQLFile)
+	pages = loadPages(pageSQLFile)
+	language.PageCount = uint32(len(pages))
 
 	for i, page := range pages {
-		idToIndices[int(page.Id)] = i
-		titleToIndices[page.Title] = i
+		idToIndices[int(page.id)] = uint32(i)
+		titleToIndices[page.title] = uint32(i)
 	}
-	fmt.Fprintf(cli.ErrStream, "%d pages.\n", len(pages))
+	log.Printf("%d pages.\n", language.PageCount)
 
-	titleIndicesFile := path.Join(outDir, "titleIndices.dat")
-	if _, err := os.Stat(titleIndicesFile); err == nil {
-		fmt.Fprintf(cli.ErrStream, "Skip to create \"%s\".\n", titleIndicesFile)
-	} else {
-		fmt.Fprintf(cli.ErrStream, "Create \"%s\".\n", titleIndicesFile)
-		generateTitleIndices(titleIndicesFile, titleToIndices)
+	pageLinkFile := path.Join(outDir, language.LinkFile)
+	log.Printf("Create \"%s\".\n", pageLinkFile)
+	linkCount := generatePageLinks(pageLinkSQLFile, pageLinkFile, pages, idToIndices, titleToIndices)
+	language.LinkCount = linkCount
+	log.Printf("%v links loaded.\n", language.LinkCount)
+	generatePages(pageFile, titleFile, pages)
+
+	configFile := path.Join(outDir, "config.json")
+	configBytes, err := json.MarshalIndent(language, "", "  ")
+	if err != nil {
+		panic(err)
 	}
-
-	pageLinkFile := path.Join(outDir, "link.dat")
-	if _, err := os.Stat(pageLinkFile); err == nil {
-		fmt.Fprintf(cli.ErrStream, "Skip \"%s\".\n", pageLinkFile)
-	} else {
-		fmt.Fprintf(cli.ErrStream, "Create \"%s\".\n", pageLinkFile)
-		linkLength := generatePageLinks(pageLinkSQLFile, pageLinkFile, pages, idToIndices, titleToIndices)
-		fmt.Fprintf(cli.ErrStream, "%v links loaded.\n", linkLength)
-		generatePages(pageFile, pages)
+	err = ioutil.WriteFile(configFile, configBytes, 0644)
+	if err != nil {
+		panic(err)
 	}
-
-	return ExitCodeOK
+	return nil
 }
 
 /**
  * Parse SQL insert statement of `pages` table.
  *
- * It returns only namespace = 0 (normal page)
+ * It returns pages which namespace == 0 (normal page)
  */
-func parsePageStatement(stmt *sqlparser.Insert) ([]core.Page, error) {
-	pages := make([]core.Page, 0)
+func parsePageStatement(stmt *sqlparser.Insert) ([]page, error) {
+	pages := make([]page, 0)
 	var columnIndex, pageID, pageNamespace, pageIsRedirect int
 	var pageTitle string
 	var err error
@@ -127,7 +127,12 @@ func parsePageStatement(stmt *sqlparser.Insert) ([]core.Page, error) {
 					panic(fmt.Sprintf("Parse error %s", err))
 				}
 				if pageNamespace == 0 {
-					pages = append(pages, core.Page{Id: int32(pageID), Title: pageTitle, IsRedirect: pageIsRedirect != 0})
+					pages = append(pages, page{
+						id:             int32(pageID),
+						title:          pageTitle,
+						titleLowercase: strings.ToLower(pageTitle),
+						isRedirect:     pageIsRedirect != 0,
+					})
 				}
 			}
 			columnIndex++
@@ -139,9 +144,9 @@ func parsePageStatement(stmt *sqlparser.Insert) ([]core.Page, error) {
 	return pages, err
 }
 
-// Import page array from sql file and generate new CSV file.
-func loadPages(in string) []core.Page {
-	var allPages []core.Page
+// Import page array from sql file
+func loadPages(in string) []page {
+	var allPages []page
 	file, err := os.Open(in)
 	if err != nil {
 		panic(err)
@@ -159,48 +164,17 @@ func loadPages(in string) []core.Page {
 		}
 		if sq, ok := statement.(*sqlparser.Insert); ok {
 			pages, err := parsePageStatement(sq)
-			//fmt.Fprintf(os.Stderr, "page len %d\n", len(pages))
 			if err != nil {
 				panic(err)
 			}
 			allPages = append(allPages, pages...)
 		}
 	}
-	return allPages
-}
-
-
-
-// Generate a map from lowercase of title to indices and write it to file.
-func generateTitleIndices(out string, titleToIndices map[string]int) {
-	lowercaseTitleToIndices := make([]pageTitleToIndex, 0)
-	for title, index := range titleToIndices {
-		lowercaseTitleToIndices = append(lowercaseTitleToIndices, pageTitleToIndex{title: strings.ToLower(title), index: index})
-	}
-	sort.Slice(lowercaseTitleToIndices, func(i, j int) bool {
-		return lowercaseTitleToIndices[i].title < lowercaseTitleToIndices[j].title
+	// sort all pages by title in lowercase
+	sort.Slice(allPages, func(i, j int) bool {
+		return allPages[i].titleLowercase < allPages[j].titleLowercase
 	})
-	fp, err := os.Create(out)
-	if err != nil {
-		panic(err)
-	}
-	defer fp.Close()
-	writer := csv.NewWriter(bufio.NewWriter(fp))
-	lastTitle := lowercaseTitleToIndices[0].title
-	lastIndex := 0
-	for i, entry := range lowercaseTitleToIndices {
-		if lastTitle != entry.title {
-			sameTitles := make([]string, 1)
-			sameTitles[0] = lastTitle
-			for j := lastIndex; j < i; j++ {
-				sameTitles = append(sameTitles, strconv.Itoa(lowercaseTitleToIndices[j].index))
-			}
-			writer.Write(sameTitles)
-			lastTitle = entry.title
-			lastIndex = i
-		}
-	}
-	writer.Flush()
+	return allPages
 }
 
 // Parse SQL insert statement of `pagelinks` table.
@@ -253,9 +227,9 @@ func parsePageLinkStatement(stmt *sqlparser.Insert) ([]pageLink, error) {
 	return pagelinks, err
 }
 
-func generatePageLinks(in string, out string, pages []core.Page, idToIndices map[int]int, titleToIndices map[string]int) uint64 {
-	forwardLinks := make([][]int, len(pages), len(pages))
-	backwardLinks := make([][]int, len(pages), len(pages))
+func generatePageLinks(in string, out string, pages []page, idToIndices map[int]uint32, titleToIndices map[string]uint32) uint64 {
+	forwardLinks := make([][]uint32, len(pages), len(pages))
+	backwardLinks := make([][]uint32, len(pages), len(pages))
 	var linkLength uint64 = 0
 	file, err := os.Open(in)
 	if err != nil {
@@ -297,8 +271,8 @@ func generatePageLinks(in string, out string, pages []core.Page, idToIndices map
 	linkIndex := 0
 	writer := bufio.NewWriter(fp)
 	for i, links := range forwardLinks {
-		pages[i].ForwardLinkIndex = int32(linkIndex)
-		pages[i].ForwardLinkLength = uint32(len(links))
+		pages[i].forwardLinkIndex = uint32(linkIndex)
+		pages[i].forwardLinkLength = uint32(len(links))
 		for _, toIndex := range links {
 			err := binary.Write(writer, binary.LittleEndian, uint32(toIndex))
 			if err != nil {
@@ -308,8 +282,8 @@ func generatePageLinks(in string, out string, pages []core.Page, idToIndices map
 		linkIndex += len(links)
 	}
 	for i, links := range backwardLinks {
-		pages[i].BackwardLinkIndex = int32(linkIndex)
-		pages[i].BackwardLinkLength = uint32(len(links))
+		pages[i].backwardLinkIndex = uint32(linkIndex)
+		pages[i].backwardLinkLength = uint32(len(links))
 		for _, fromIndex := range links {
 			err := binary.Write(writer, binary.LittleEndian, uint32(fromIndex))
 			if err != nil {
@@ -322,27 +296,74 @@ func generatePageLinks(in string, out string, pages []core.Page, idToIndices map
 	return linkLength
 }
 
-func generatePages(out string, pages []core.Page) {
-	fp, err := os.Create(out)
+func generatePages(pageFile, titleFile string, pages []page) {
+	pageFp, err := os.Create(pageFile)
 	if err != nil {
 		panic(err)
 	}
-	defer fp.Close()
-	writer := csv.NewWriter(bufio.NewWriter(fp))
+	defer pageFp.Close()
+	titleFp, err := os.Create(titleFile)
+	if err != nil {
+		panic(err)
+	}
+	defer titleFp.Close()
+	pageWriter := bufio.NewWriter(pageFp)
+	titleWriter := bufio.NewWriter(titleFp)
+	var titleOffset uint32
 	for _, page := range pages {
-		if err := writer.Write([]string{
-			strconv.Itoa(int(page.Id)),
-			strconv.FormatBool(page.IsRedirect),
-			page.Title,
-			strconv.Itoa(int(page.ForwardLinkIndex)),
-			strconv.Itoa(int(page.ForwardLinkLength)),
-			strconv.Itoa(int(page.BackwardLinkIndex)),
-			strconv.Itoa(int(page.BackwardLinkLength)),
-		}); err != nil {
+		// Write page title + "\0"
+		titleLength, err := titleWriter.WriteString(page.title)
+		if err != nil {
 			panic(err)
 		}
+		err = titleWriter.WriteByte(0)
+		if err != nil {
+			panic(err)
+		}
+
+		err = binary.Write(pageWriter, binary.LittleEndian, page.id)
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Write(pageWriter, binary.LittleEndian, titleOffset)
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Write(pageWriter, binary.LittleEndian, uint16(titleLength))
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Write(pageWriter, binary.LittleEndian, page.isRedirect)
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Write(pageWriter, binary.LittleEndian, page.forwardLinkIndex)
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Write(pageWriter, binary.LittleEndian, page.forwardLinkLength)
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Write(pageWriter, binary.LittleEndian, page.backwardLinkIndex)
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Write(pageWriter, binary.LittleEndian, page.backwardLinkLength)
+		if err != nil {
+			panic(err)
+		}
+
+		titleOffset += uint32(titleLength) + 1
 	}
-	writer.Flush()
+	err = pageWriter.Flush()
+	if err != nil {
+		panic(err)
+	}
+	err = titleWriter.Flush()
+	if err != nil {
+		panic(err)
+	}
 }
 
 //func loadPageLinks(in string) []uint64 {

@@ -1,80 +1,92 @@
 package core
 
 import (
-	"encoding/csv"
-	"io"
+	"bufio"
+	"encoding/binary"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"os"
-	"strconv"
 )
 
+// WikipediaFiles defines JSON structure for data set of language.
+type Language struct {
+	Id                          string `json:"id"`
+	PageCount                   uint32 `json:"page_count"`
+	PageFile                    string `json:"page_file"`
+	TitleFile                   string `json:"title_file"`
+	LinkCount                   uint64 `json:"link_count"`
+	LinkFile                    string `json:"link_file"`
+}
+
 type Page struct {
-	Id                 int32
-	Title              string
+	Id                 uint32
+	TitleOffset        uint32
+	TitleLength        uint16
 	IsRedirect         bool
-	ForwardLinkIndex   int32
+	ForwardLinkIndex   uint32
 	ForwardLinkLength  uint32
-	BackwardLinkIndex  int32
+	BackwardLinkIndex  uint32
 	BackwardLinkLength uint32
 }
 
-func LoadPages(pageCount uint, in string) []Page {
+func LoadPages(pageCount uint32, in string) []Page {
 	file, err := os.Open(in)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
-	reader := csv.NewReader(file)
-	reader.FieldsPerRecord = 7
-	reader.ReuseRecord = true
+	reader := bufio.NewReader(file)
 	pages := make([]Page, 0, pageCount)
-	records, err := reader.ReadAll()
-	if err != nil {
-		panic(err)
-	}
-	for _, record := range records {
-		if err == io.EOF {
-			break
-		}
-		pageID, err := strconv.Atoi(record[0])
+	for i := 0; uint32(i) < pageCount; i += 1 {
+		page := Page{}
+		err := binary.Read(reader, binary.LittleEndian, &page.Id)
 		if err != nil {
 			panic(err)
 		}
-		pageIsRedirect, err := strconv.ParseBool(record[1])
+		err = binary.Read(reader, binary.LittleEndian, &page.TitleOffset)
 		if err != nil {
 			panic(err)
 		}
-		forwardLinkIndex, err := strconv.Atoi(record[3])
+		err = binary.Read(reader, binary.LittleEndian, &page.TitleLength)
 		if err != nil {
 			panic(err)
 		}
-		forwardLinkLength, err := strconv.Atoi(record[4])
+		err = binary.Read(reader, binary.LittleEndian, &page.IsRedirect)
 		if err != nil {
 			panic(err)
 		}
-		backwardLinkIndex, err := strconv.Atoi(record[5])
+		err = binary.Read(reader, binary.LittleEndian, &page.ForwardLinkIndex)
 		if err != nil {
 			panic(err)
 		}
-		backwardLinkLength, err := strconv.Atoi(record[6])
+		err = binary.Read(reader, binary.LittleEndian, &page.ForwardLinkLength)
 		if err != nil {
 			panic(err)
 		}
-		pages = append(pages, Page{
-			Id:                 int32(pageID),
-			Title:              CopyString(record[2]),
-			IsRedirect:         pageIsRedirect,
-			ForwardLinkIndex:   int32(forwardLinkIndex),
-			ForwardLinkLength:  uint32(forwardLinkLength),
-			BackwardLinkIndex:  int32(backwardLinkIndex),
-			BackwardLinkLength: uint32(backwardLinkLength),
-		})
+		err = binary.Read(reader, binary.LittleEndian, &page.BackwardLinkIndex)
+		if err != nil {
+			panic(err)
+		}
+		err = binary.Read(reader, binary.LittleEndian, &page.BackwardLinkLength)
+		if err != nil {
+			panic(err)
+		}
+		pages = append(pages, page)
 	}
 	return pages
 }
 
-// deepcopy
-func CopyString(s string) string {
-	bytes := make([]byte, len(s))
-	copy(bytes, s)
-	return string(bytes)
+// load config.json
+func LoadLanguage(in string) (*Language, error) {
+	bytes, err := ioutil.ReadFile(in)
+	if err != nil {
+		log.Fatal(err)
+	}
+	language := Language{}
+	err = json.Unmarshal(bytes, &language)
+	if err != nil {
+		return nil, err
+	}
+	return &language, nil
 }
