@@ -11,7 +11,7 @@
       <fieldset>
         <p>
           <label>
-            <input type="text" class="word" name="wordFrom" v-model="wordFrom">
+            <input type="text" class="word" name="wordFrom" :value="wordFrom" @input="setWordFrom">
             <button
               class="random"
               v-on:click="getRandomFrom"
@@ -24,7 +24,7 @@
         </p>
         <p>
           <label>
-            <input type="text" class="word" name="wordTo" v-model="wordTo">
+            <input type="text" class="word" name="wordTo" :value="wordTo" @input="setWordTo">
             <button
               class="random"
               v-on:click="getRandomTo"
@@ -88,6 +88,16 @@ export default Vue.extend({
           }
         })
         .catch(error => console.log(error));
+    },
+    setWordFrom(e: Event) {
+      if (e.target instanceof HTMLInputElement) {
+        this.$store.commit('setWordFrom', e.target.value);
+      }
+    },
+    setWordTo(e: Event) {
+      if (e.target instanceof HTMLInputElement) {
+        this.$store.commit('setWordTo', e.target.value);
+      }
     },
     search() {
       this.$router.push({ path: '/search', query: { lang: this.$i18n.locale, wordFrom: this.wordFrom, wordTo: this.wordTo } });
