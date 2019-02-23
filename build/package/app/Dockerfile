@@ -10,10 +10,10 @@ COPY --from=asset /node/dist ./dist
 COPY cmd ./cmd
 COPY internal ./internal
 COPY Makefile go.mod go.sum ./
-RUN apk add --update git make gcc musl-dev && \
-go get github.com/rakyll/statik && \
-statik -p web -src ./dist -dest internal/app && \
-GOOS=linux GOARCH=amd64 make all
+RUN apk add --update git make gcc musl-dev
+RUN go get -u github.com/rakyll/statik
+RUN statik -p web -src ./dist -dest internal/app
+RUN make build/web
 
 FROM alpine:3.8
 WORKDIR /app
