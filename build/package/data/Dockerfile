@@ -32,4 +32,5 @@ RUN ./gen -lang en -ip "enwiki-${DATE}-page.sql.gz" -il "enwiki-${DATE}-pagelink
 FROM tianon/true
 
 WORKDIR /data
-COPY --from=data /data/ja /data/en /data/
+COPY --from=data /data/ja /data/ja
+COPY --from=data /data/en /data/en
