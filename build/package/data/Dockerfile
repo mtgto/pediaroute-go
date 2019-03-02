@@ -1,6 +1,6 @@
 # docker build --file build/package/data/Dockerfile --build-arg DATE=YYYYMMDD --tag mtgto/pediaroute-data:YYYYMMDD .
 
-FROM golang:1.11-alpine3.8 as app
+FROM golang:1.12-alpine3.9 as app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 ENV GO111MODULE=on
 COPY cmd ./cmd
@@ -10,7 +10,7 @@ RUN apk add --update git make gcc musl-dev
 RUN make build/gen
 
 
-FROM alpine:3.8 as data
+FROM alpine:3.9 as data
 WORKDIR /data
 ARG DATE
 

@@ -3,7 +3,7 @@ WORKDIR /node
 COPY web .
 RUN yarn install && yarn build
 
-FROM golang:1.11-alpine3.8 as app
+FROM golang:1.12-alpine3.9 as app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 ENV GO111MODULE=on
 COPY --from=asset /node/dist ./dist
@@ -15,7 +15,7 @@ RUN go get -u github.com/rakyll/statik
 RUN statik -p web -src ./dist -dest internal/app
 RUN make build/web
 
-FROM alpine:3.8
+FROM alpine:3.9
 WORKDIR /app
 COPY --from=app /go/src/github.com/mtgto/pediaroute-go/build/web .
 ENTRYPOINT /app/web
