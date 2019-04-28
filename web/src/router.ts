@@ -34,8 +34,8 @@ const router = new Router({
       name: 'search',
       component: Search,
       props: (route: Route): { [key: string]: string | string[] } => ({
-        wordFrom: route.query.wordFrom,
-        wordTo: route.query.wordTo,
+        wordFrom: route.query!.wordFrom as string,
+        wordTo: route.query!.wordTo as string,
       }),
       meta: {
         title: (route: Route) => `${route.query.wordFrom} から ${route.query.wordTo} の検索結果 - PediaRoute`,
