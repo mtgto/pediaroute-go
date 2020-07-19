@@ -5,7 +5,6 @@ RUN yarn install && yarn build
 
 FROM golang:1.14-alpine as app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
-ENV GO111MODULE=on
 COPY --from=asset /node/dist ./dist
 COPY cmd ./cmd
 COPY internal ./internal
