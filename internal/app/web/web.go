@@ -87,8 +87,7 @@ func (w *Wikipedia) generateWordSet(word string) map[uint32]struct{} {
 	if index == len(w.pages) {
 		return set
 	}
-	set[uint32(index)] = struct{}{}
-	for i := index - 1; i >= 0; i -= 1 {
+	for i := index; i >= 0; i -= 1 {
 		title, err := w.title(w.pages[i])
 		if err != nil {
 			log.Printf("Error while generateWordSet: %v", err)
