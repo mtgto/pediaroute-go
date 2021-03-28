@@ -1,9 +1,9 @@
-FROM node:12-alpine as asset
+FROM node:14-alpine as asset
 WORKDIR /node
 COPY web .
 RUN yarn install && yarn build
 
-FROM golang:1.15-alpine as app
+FROM golang:1.16-alpine as app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 COPY --from=asset /node/dist ./dist
 COPY cmd ./cmd
