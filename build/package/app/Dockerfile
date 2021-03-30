@@ -3,7 +3,7 @@
 
 FROM node:14-buster-slim as asset
 WORKDIR /node
-COPY web/package.json web/yarn.lock .
+COPY web/package.json web/yarn.lock /node/
 RUN yarn install
 COPY web .
 RUN yarn build
