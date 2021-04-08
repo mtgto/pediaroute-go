@@ -31,21 +31,20 @@ func main() {
 	wikipedias := make(map[string]web.Wikipedia)
 
 	var (
-		japaneseDirectory = flag.String("ja", "ja", "Directory path of Japanese data")
-		englishDirectory = flag.String("en", "en", "Directory path of English data")
+		japaneseConfigFile = flag.String("ja", "ja", "Configuration file path of Japanese data")
+		englishConfigFile = flag.String("en", "en", "Configuration file path of English data")
 	)
 
 	flag.Parse()
 	// overwrite by environment variables
-	if dir, ok := os.LookupEnv("JA"); ok {
-		japaneseDirectory = &dir
+	if configFile, ok := os.LookupEnv("JA"); ok {
+		japaneseConfigFile = &configFile
 	}
-	if dir, ok := os.LookupEnv("EN"); ok {
-		englishDirectory = &dir
+	if configFile, ok := os.LookupEnv("EN"); ok {
+		englishConfigFile = &configFile
 	}
-	log.Printf("%v", *englishDirectory)
 
-	for lang, langFile := range map[string]string{"ja": *japaneseDirectory, "en": *englishDirectory} {
+	for lang, langFile := range map[string]string{"ja": *japaneseConfigFile, "en": *englishConfigFile} {
 		language, err := core.LoadLanguage(langFile)
 		if err != nil {
 			log.Fatalf("Failed to load language file: %v", err)
