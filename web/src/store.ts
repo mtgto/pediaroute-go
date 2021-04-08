@@ -1,10 +1,12 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 
-Vue.use(Vuex);
+export interface State {
+  wordFrom: string;
+  wordTo: string;
+}
 
-export const store = new Vuex.Store({
-  strict: process.env.NODE_ENV !== 'production',
+export const store = createStore({
+  //strict: process.env.NODE_ENV !== 'production',
   state: {
     wordFrom: '',
     wordTo: '',
