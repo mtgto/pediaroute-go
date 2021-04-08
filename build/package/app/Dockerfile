@@ -21,7 +21,7 @@ RUN make build/web
 
 FROM gcr.io/distroless/base-debian10
 WORKDIR /app
+ENV JA=/data/ja/config.json EN=/data/en/config.json
 COPY --from=app /go/src/github.com/mtgto/pediaroute-go/build/web .
-COPY --from=mtgto/pediaroute-data:latest /data/ja /data/ja
-COPY --from=mtgto/pediaroute-data:latest /data/en /data/en
+COPY --from=mtgto/pediaroute-data:latest /data /data
 ENTRYPOINT ["/app/web"]
