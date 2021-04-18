@@ -1,35 +1,33 @@
 <template>
   <div>
     <header>
-      <h1>
-        <span>P</span>edia
-        <span>R</span>oute.com
-      </h1>
-      <p v-if="route">{{ $t('message.searchResult', { wordFrom, wordTo, second: time / 1000 }) }}</p>
-      <p v-else>{{ $t('message.searching', { wordFrom, wordTo }) }}</p>
+      <h1><span>P</span>edia <span>R</span>oute.com</h1>
+      <p v-if="routes" v-text="t('message.searchResult', { wordFrom, wordTo, second: time / 1000 })" />
+      <p v-else v-text="t('message.searching', { wordFrom, wordTo })" />
     </header>
-    <article v-if="route">
+    <article v-if="routes">
       <ol start="0">
-        <li v-for="(word, index) in route" v-bind:key="`${index}`">
-          <a v-bind:href="$t('message.wikipediaUrl', { word })">{{word}}</a>
+        <li v-for="(word, index) in routes" :key="`${index}`">
+          <a :href="t('message.wikipediaUrl', { word })" v-text="word" />
         </li>
       </ol>
     </article>
-    <article class="error" v-if="failureReason">
-      <p>{{failureReason}}</p>
+    <article v-if="failureReason" class="error">
+      <p v-text="failureReason" />
     </article>
     <aside id="links">
       <ul>
         <li>
           <router-link
-            :to="{path: '/search', query: {lang: this.$i18n.locale, wordFrom: wordTo, wordTo: wordFrom}}"
-          >{{ $t('message.searchInReverse', { wordFrom, wordTo })}}</router-link>
+            :to="{ path: '/search', query: { lang: $i18n.locale, wordFrom: wordTo, wordTo: wordFrom } }"
+            v-text="t('message.searchInReverse', { wordFrom, wordTo })"
+          />
         </li>
-        <li v-if="route">
-          <a v-bind:href="tweetFoundUrl(route)" target="_blank">{{ $t('message.tweet') }}</a>
+        <li v-if="routes">
+          <a :href="tweetFoundUrl(routes)" target="_blank" v-text="t('message.tweet')" />
         </li>
         <li v-else>
-          <a v-bind:href="tweetNotFoundUrl()" target="_blank">{{ $t('message.tweet') }}</a>
+          <a :href="tweetNotFoundUrl()" target="_blank" v-text="t('message.tweet')" />
         </li>
       </ul>
     </aside>
@@ -37,101 +35,111 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import { defineComponent, ref, Ref, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-enum ErrorCode {
-  NoError = 0,
-  NotFoundFrom = 1,
-  NotFoundTo = 2,
-  NotFoundRoute = 3,
-}
+export const ErrorCode = {
+  NoError: 0,
+  NotFoundFrom: 1,
+  NotFoundTo: 2,
+  NotFoundRoute: 3,
+} as const;
+type ErrorCodeType = typeof ErrorCode[keyof typeof ErrorCode];
 
 interface Result {
   readonly route: ReadonlyArray<string> | undefined;
-  readonly error: ErrorCode;
+  readonly error: ErrorCodeType;
 }
 
-// Data structure
-interface Data {
-  route: ReadonlyArray<string> | undefined;
-  failureReason: string | undefined;
-  time: number;
-}
+type Props = {
+  wordFrom: string;
+  wordTo: string;
+};
 
-export default Vue.extend({
-  data(): Data {
-    return {
-      route: undefined, // Array of string
-      failureReason: undefined, // string of faulure reason
-      time: 0, // milliseconds of searching
-    };
+export default defineComponent({
+  props: {
+    wordFrom: {
+      type: String,
+      required: true,
+    },
+    wordTo: {
+      type: String,
+      required: true,
+    },
   },
-  props: ['wordFrom', 'wordTo'],
-  created() {
-    this.search();
-  },
-  watch: {
-    $route: 'search',
-  },
-  methods: {
-    search() {
-      const body = JSON.stringify({ from: this.wordFrom, to: this.wordTo });
+  setup(props: Props) {
+    const i18n = useI18n();
+    // data
+    const routes: Ref<readonly string[] | undefined> = ref(undefined);
+    const failureReason: Ref<string | undefined> = ref(undefined);
+    const time = ref(0);
+    // methods
+    const search = async () => {
+      const body = JSON.stringify({ from: props.wordFrom, to: props.wordTo });
       const headers = {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       };
       const start = new Date().getTime();
-      this.route = undefined;
-      fetch(`/api/search?lang=${encodeURI(this.$i18n.locale)}`, { method: 'POST', body, headers })
-        .then(response => response.json())
+      routes.value = undefined;
+      return fetch(`/api/search?lang=${encodeURI(i18n.locale.value)}`, { method: 'POST', body, headers })
+        .then((response) => response.json())
         .then((result: Result) => {
-          this.route = result.route;
+          routes.value = result.route;
           if (result.error === ErrorCode.NoError) {
-            this.failureReason = undefined;
+            failureReason.value = undefined;
           } else if (result.error === ErrorCode.NotFoundFrom) {
-            const message = this.$i18n.t('error.notFoundFrom', this.$i18n.locale, { from: this.wordFrom });
+            const message = i18n.t('error.notFoundFrom', { from: props.wordFrom });
             if (typeof message === 'string') {
-              this.failureReason = message;
+              failureReason.value = message;
             }
           } else if (result.error === ErrorCode.NotFoundTo) {
-            const message = this.$i18n.t('error.notFoundTo', this.$i18n.locale, { to: this.wordTo });
+            const message = i18n.t('error.notFoundTo', { to: props.wordTo });
             if (typeof message === 'string') {
-              this.failureReason = message;
+              failureReason.value = message;
             }
           } else if (result.error === ErrorCode.NotFoundRoute) {
-            const message = this.$i18n.t('error.notFoundRoute', this.$i18n.locale);
+            const message = i18n.t('error.notFoundRoute');
             if (typeof message === 'string') {
-              this.failureReason = message;
+              failureReason.value = message;
             }
           }
-          this.time = new Date().getTime() - start;
+          time.value = new Date().getTime() - start;
         });
-    },
-    tweetFoundUrl(route: string[]) {
-      return this.$i18n.t('message.tweetFind', this.$i18n.locale, {
-        wordFrom: this.wordFrom,
-        wordTo: this.wordTo,
-        length: `${this.route && route.length - 1}`,
+    };
+    const tweetFoundUrl = (route: string[]): string => {
+      return i18n.t('message.tweetFind', {
+        wordFrom: props.wordFrom,
+        wordTo: props.wordTo,
+        length: `${route && route.length - 1}`,
         link: `${encodeURIComponent(
-          `https://pediaroute.com/search?lang=${encodeURI(this.$i18n.locale)}&wordFrom=${encodeURIComponent(
-            this.wordFrom,
-          )}&wordTo=${encodeURIComponent(this.wordTo)}`,
+          `https://pediaroute.com/search?lang=${encodeURI(i18n.locale.value)}&wordFrom=${encodeURIComponent(
+            props.wordFrom,
+          )}&wordTo=${encodeURIComponent(props.wordTo)}`,
         )}`,
         hashTag: encodeURIComponent('#pediaroute'),
       });
-    },
-    tweetNotFoundUrl() {
-      return this.$i18n.t('message.tweetNotFound', this.$i18n.locale, {
-        wordFrom: this.wordFrom,
-        wordTo: this.wordTo,
+    };
+    const tweetNotFoundUrl = (): string => {
+      return i18n.t('message.tweetNotFound', {
+        wordFrom: props.wordFrom,
+        wordTo: props.wordTo,
         link: `${encodeURIComponent(
-          `https://pediaroute.com/search?lang=${encodeURI(this.$i18n.locale)}&wordFrom=${encodeURIComponent(
-            this.wordFrom,
-          )}&wordTo=${encodeURIComponent(this.wordTo)}`,
+          `https://pediaroute.com/search?lang=${encodeURI(i18n.locale.value)}&wordFrom=${encodeURIComponent(
+            props.wordFrom,
+          )}&wordTo=${encodeURIComponent(props.wordTo)}`,
         )}`,
         hashTag: encodeURIComponent('#pediaroute'),
       });
-    },
+    };
+    onMounted(search);
+    watch(
+      () => [props.wordFrom, props.wordTo],
+      () => {
+        search();
+      },
+    );
+    return { routes, failureReason, time, search, tweetFoundUrl, tweetNotFoundUrl, t: i18n.t };
   },
 });
 </script>

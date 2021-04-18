@@ -3,54 +3,41 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
+    "serve": "parcel serve public/index.html",
+    "build": "yarn run clean && parcel build --no-scope-hoist public/index.html",
+    "clean": "yarn run rimraf ./dist",
+    "lint": "eslint",
+    "format:eslint": "eslint '*.cjs' 'src/**/*.{ts,vue}' --fix",
+    "format:prettier": "prettier '*.cjs' 'src/**/*.{ts,vue}' --write",
     "asset": "statik -p web -src dist -dest ../internal/app"
   },
   "dependencies": {
-    "vue": "^2.6.10",
-    "vue-class-component": "^7.1.0",
-    "vue-i18n": "^8.15.0",
-    "vue-property-decorator": "^8.3.0",
-    "vue-router": "^3.1.3",
-    "vuex": "^3.1.2"
+    "vue": "^3.0.11",
+    "vue-i18n": "^9.1.2",
+    "vue-router": "^4.0.6",
+    "vuex": "^4.0.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-typescript": "^4.1.1",
-    "@vue/cli-service": "^4.1.1",
-    "lint-staged": "^9.5.0",
-    "prettier": "^1.19.1",
-    "typescript": "^3.7.3",
-    "vue-template-compiler": "^2.6.10"
-  },
-  "gitHooks": {
-    "pre-commit": "lint-staged"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "vue-cli-service lint",
-      "git add"
-    ],
-    "*.vue": [
-      "vue-cli-service lint",
-      "git add"
-    ]
+    "@parcel/babel-plugin-transform-runtime": "^2.0.0-beta.2",
+    "@parcel/transformer-vue": "2.0.0-beta.2",
+    "@types/node": "^14.14.37",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
+    "autoprefixer": "^10.2.5",
+    "eslint": "^7.24.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^7.8.0",
+    "lint-staged": "^10.5.4",
+    "parcel": "2.0.0-beta.2",
+    "postcss": "^8.1.0",
+    "prettier": "^2.2.1",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.2.4"
   },
   "prettier": {
     "printWidth": 150,
     "singleQuote": true,
     "trailingComma": "all",
     "tabWidth": 2
-  },
-  "vue": {
-    "devServer": {
-      "proxy": {
-        "/api": {
-          "target": "http://localhost:9000"
-        }
-      },
-      "disableHostCheck": true
-    }
   }
 }

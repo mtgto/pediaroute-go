@@ -1,9 +1,6 @@
-import Vue from 'vue';
-import VueI18n from 'vue-i18n';
+import { createI18n } from 'vue-i18n';
 
-Vue.use(VueI18n);
-
-const detectUserLanguage = (fallbackLanguage: string = 'en'): string => {
+const detectUserLanguage = (fallbackLanguage = 'en'): string => {
   const language: string = navigator.language;
   if (language) {
     return language.split('-')[0];
@@ -11,7 +8,7 @@ const detectUserLanguage = (fallbackLanguage: string = 'en'): string => {
   return fallbackLanguage;
 };
 
-export const i18n: VueI18n = new VueI18n({
+export const i18n = createI18n({
   locale: detectUserLanguage(),
   fallbackLocale: 'en',
   messages: {
@@ -53,7 +50,7 @@ export const i18n: VueI18n = new VueI18n({
         eighth: 'You can use the data of this site under ',
         commons: 'CC BY-SA 3.0',
         commonsUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed',
-        nineth: '.',
+        ninth: '.',
         findingRoute: 'Route finding',
         data: 'Data using on this site',
         author: 'Author',
@@ -100,7 +97,7 @@ export const i18n: VueI18n = new VueI18n({
         eighth: 'このサイトの情報は',
         commons: 'クリエイティブ・コモンズ 表示-継承 3.0 非移植ライセンス',
         commonsUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.ja',
-        nineth: 'の下で利用可能です。',
+        ninth: 'の下で利用可能です。',
         findingRoute: '経路検索について',
         data: '使用しているデータについて',
         author: '作者について',

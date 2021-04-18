@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-view/>
+    <router-view></router-view>
     <footer>
       <nav>
         <router-link to="/">Home</router-link>&nbsp;|
@@ -9,6 +9,14 @@
     </footer>
   </div>
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  // type inference enabled
+});
+</script>
 
 <style>
 * {

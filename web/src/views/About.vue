@@ -14,9 +14,7 @@
         <p>{{ $t('about.third') }}</p>
         <p>
           {{ $t('about.fourth') }}
-          <a
-            href="https://github.com/mtgto/pediaroute-go"
-          >{{ $t('about.sourceCode') }}</a>
+          <a href="https://github.com/mtgto/pediaroute-go">{{ $t('about.sourceCode') }}</a>
           {{ $t('about.fifth') }}
         </p>
       </section>
@@ -30,7 +28,7 @@
         <p>
           {{ $t('about.eighth') }}
           <a :href="$t('about.commonsUrl')">{{ $t('about.commons') }}</a>
-          {{ $t('about.nineth') }}
+          {{ $t('about.ninth') }}
         </p>
       </section>
     </article>
