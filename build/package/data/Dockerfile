@@ -36,7 +36,7 @@ RUN mkdir en
 RUN ./gen -lang en -ip "enwiki-${DATE}-page.sql.gz" -il "enwiki-${DATE}-pagelinks.sql.gz" -o en
 
 
-FROM golang:1.16-buster
+FROM gcr.io/distroless/base-debian10
 
 WORKDIR /data
 COPY --from=ja /data/ja /data/ja

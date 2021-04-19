@@ -19,9 +19,8 @@ COPY internal ./internal
 RUN statik -p web -src ./dist -dest internal/app
 RUN make build/web
 
-FROM gcr.io/distroless/base-debian10
+FROM mtgto/pediaroute-data:latest
 WORKDIR /app
-ENV JA=/data/ja/config.json EN=/data/en/config.json
 COPY --from=app /go/src/github.com/mtgto/pediaroute-go/build/web .
-COPY --from=mtgto/pediaroute-data:latest /data /data
+ENV JA=/data/ja/config.json EN=/data/en/config.json
 ENTRYPOINT ["/app/web"]
