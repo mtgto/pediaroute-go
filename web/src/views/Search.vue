@@ -56,6 +56,14 @@ type Props = {
   wordTo: string;
 };
 
+const tweetUrl = (text: string, url: string): string => {
+  const tweetUrl = new URL('https://twitter.com/intent/tweet');
+  tweetUrl.searchParams.append('text', text);
+  tweetUrl.searchParams.append('url', url);
+  tweetUrl.searchParams.append('hashtags', 'pediaroute');
+  return tweetUrl.toString();
+};
+
 export default defineComponent({
   props: {
     wordFrom: {
@@ -108,29 +116,27 @@ export default defineComponent({
         });
     };
     const tweetFoundUrl = (route: string[]): string => {
-      return i18n.t('message.tweetFind', {
-        wordFrom: props.wordFrom,
-        wordTo: props.wordTo,
-        length: `${route && route.length - 1}`,
-        link: `${encodeURIComponent(
-          `https://pediaroute.com/search?lang=${encodeURI(i18n.locale.value)}&wordFrom=${encodeURIComponent(
-            props.wordFrom,
-          )}&wordTo=${encodeURIComponent(props.wordTo)}`,
-        )}`,
-        hashTag: encodeURIComponent('#pediaroute'),
-      });
+      return tweetUrl(
+        i18n.t('message.tweetFind', {
+          wordFrom: props.wordFrom,
+          wordTo: props.wordTo,
+          length: `${route && route.length - 1}`,
+        }),
+        `https://pediaroute.com/search?lang=${encodeURI(i18n.locale.value)}&wordFrom=${encodeURIComponent(
+          props.wordFrom,
+        )}&wordTo=${encodeURIComponent(props.wordTo)}`,
+      );
     };
     const tweetNotFoundUrl = (): string => {
-      return i18n.t('message.tweetNotFound', {
-        wordFrom: props.wordFrom,
-        wordTo: props.wordTo,
-        link: `${encodeURIComponent(
-          `https://pediaroute.com/search?lang=${encodeURI(i18n.locale.value)}&wordFrom=${encodeURIComponent(
-            props.wordFrom,
-          )}&wordTo=${encodeURIComponent(props.wordTo)}`,
-        )}`,
-        hashTag: encodeURIComponent('#pediaroute'),
-      });
+      return tweetUrl(
+        i18n.t('message.tweetNotFound', {
+          wordFrom: props.wordFrom,
+          wordTo: props.wordTo,
+        }),
+        `https://pediaroute.com/search?lang=${encodeURI(i18n.locale.value)}&wordFrom=${encodeURIComponent(
+          props.wordFrom,
+        )}&wordTo=${encodeURIComponent(props.wordTo)}`,
+      );
     };
     onMounted(search);
     watch(

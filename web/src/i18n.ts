@@ -23,8 +23,8 @@ export const i18n = createI18n({
         searchResult: 'Search result of route from "{wordFrom}" to "{wordTo}" ({second} sec)',
         searchInReverse: 'Search a route from "{wordTo}" to "{wordFrom}"',
         tweet: 'Tweet (open new window)',
-        tweetFind: 'https://twitter.com/home?status=From {wordFrom} to {wordTo} can be reached in {length} links in Wikipedia. {link} {hashTag}',
-        tweetNotFound: 'https://twitter.com/home?status=From {wordFrom} to {wordTo} can not be reached within 6 links in Wikipedia. {link} {hashTag}',
+        tweetFind: 'From {wordFrom} to {wordTo} can be reached in {length} links in Wikipedia.',
+        tweetNotFound: 'From {wordFrom} to {wordTo} can not be reached within 6 links in Wikipedia.',
         wikipediaUrl: 'https://en.wikipedia.org/wiki/{word}',
       },
       error: {
@@ -67,8 +67,8 @@ export const i18n = createI18n({
         searchResult: '「{wordFrom}」から「{wordTo}」へのリンクの検索結果 (実行時間 {second} sec)',
         searchInReverse: '「{wordTo}」から「{wordFrom}」を検索する',
         tweet: '結果をTwitterにつぶやく (別ウィンドウで開きます)',
-        tweetFind: 'https://twitter.com/home?status=「{wordFrom}」から「{wordTo}」へはWikipediaで{length}リンクで行けるよ！ {link} {hashTag}',
-        tweetNotFound: 'https://twitter.com/home?status=「{wordFrom}」から「{wordTo}」へはWikipediaで6回のリンクじゃいけないみたい… {link} {hashTag}',
+        tweetFind: '「{wordFrom}」から「{wordTo}」へはWikipediaで{length}リンクで行けるよ！',
+        tweetNotFound: '「{wordFrom}」から「{wordTo}」へはWikipediaで6回のリンクじゃいけないみたい…',
         wikipediaUrl: 'https://ja.wikipedia.org/wiki/{word}',
       },
       error: {
