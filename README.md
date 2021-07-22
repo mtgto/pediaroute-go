@@ -1,5 +1,4 @@
-pediaroute
-====
+# pediaroute
 
 Source of https://pediaroute.com/ .
 
@@ -7,15 +6,13 @@ Source of https://pediaroute.com/ .
 
 You need
 
-- Golang 1.11+
+- Golang 1.16+
 - Make
-- Node.js 8+
+- Node.js 14+
 - yarnpkg
 - [statik](https://github.com/rakyll/statik)
 
 ```console
-# If you use golang 1.11
-$ export GO111MODULE=on
 $ go get
 
 $ cd web
