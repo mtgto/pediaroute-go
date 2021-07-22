@@ -18,8 +18,10 @@
     "vuex": "^4.0.0"
   },
   "devDependencies": {
-    "@parcel/babel-plugin-transform-runtime": "^2.0.0-beta.3.1",
-    "@parcel/transformer-vue": "2.0.0-beta.3.1",
+    "@babel/plugin-transform-typescript": "^7.14.6",
+    "@parcel/babel-plugin-transform-runtime": "nightly",
+    "@parcel/babel-preset-env": "nightly",
+    "@parcel/transformer-vue": "nightly",
     "@types/node": "^14.14.37",
     "@typescript-eslint/eslint-plugin": "^4.21.0",
     "@typescript-eslint/parser": "^4.21.0",
@@ -28,7 +30,7 @@
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.8.0",
     "lint-staged": "^10.5.4",
-    "parcel": "2.0.0-beta.3.1",
+    "parcel": "nightly",
     "postcss": "^8.1.0",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
