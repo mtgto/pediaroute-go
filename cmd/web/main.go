@@ -1,11 +1,12 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"flag"
 	"github.com/mtgto/pediaroute-go/internal/app/core"
 	"github.com/mtgto/pediaroute-go/internal/app/web"
-	"github.com/rakyll/statik/fs"
+	"io/fs"
 	"log"
 	"math/rand"
 	"net/http"
@@ -24,6 +25,9 @@ const (
 	NotFoundTo
 	NotFoundRoute
 )
+
+//go:embed assets/*
+var assets embed.FS
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
@@ -65,11 +69,11 @@ func main() {
 	log.Println("Data loaded.")
 	printMemory()
 
-	statikFS, err := fs.New()
+	public, err := fs.Sub(assets, "assets")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fileServer := http.FileServer(statikFS)
+	fileServer := http.FileServer(http.FS(public))
 	http.Handle("/", fileServer)
 	http.Handle("/about", http.StripPrefix("/about", fileServer))
 	http.Handle("/search", http.StripPrefix("/search", fileServer))

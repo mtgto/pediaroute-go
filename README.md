@@ -10,13 +10,10 @@ You need
 - Make
 - Node.js 14+
 - yarnpkg
-- [statik](https://github.com/rakyll/statik)
 
 ```console
-$ go get
-
-$ cd web
-$ yarn install && yarn build && yarn asset
+$ cd web && yarn install && yarn build:dev
+$ make
 ```
 
 # How to generate application data
