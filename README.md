@@ -10,7 +10,6 @@ You need
 - Make
 - Node.js 14+
 - yarnpkg
-- [statik](https://github.com/rakyll/statik)
 
 ```console
 $ go get
