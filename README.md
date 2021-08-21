@@ -12,10 +12,8 @@ You need
 - yarnpkg
 
 ```console
-$ go get
-
-$ cd web
-$ yarn install && yarn build && yarn asset
+$ cd web && yarn install && yarn build:dev
+$ make
 ```
 
 # How to generate application data

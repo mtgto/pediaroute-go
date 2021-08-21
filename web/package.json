@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "serve": "parcel serve public/index.html",
-    "build": "yarn run clean && parcel build --no-scope-hoist public/index.html --dist-dir ../cmd/web/assets",
+    "build": "yarn run clean && parcel build --no-scope-hoist public/index.html",
+    "build:dev": "yarn run build --dist-dir ../cmd/web/assets",
     "clean": "yarn run rimraf ../cmd/web/assets",
     "lint": "eslint",
     "format:eslint": "eslint '*.cjs' 'src/**/*.{ts,vue}' --fix",
