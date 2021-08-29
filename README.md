@@ -6,7 +6,7 @@ Source of https://pediaroute.com/ .
 
 You need
 
-- Golang 1.16+
+- Golang 1.17
 - Make
 - Node.js 14+
 - yarnpkg
