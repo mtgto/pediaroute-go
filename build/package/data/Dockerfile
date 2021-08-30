@@ -16,8 +16,8 @@ ARG DATE
 
 COPY --from=app /go/src/github.com/mtgto/pediaroute-go/build/gen .
 
-RUN wget --no-verbose --continue "https://dumps.wikimedia.org/jawiki/${DATE}/jawiki-${DATE}-page.sql.gz"
-RUN wget --no-verbose --continue "https://dumps.wikimedia.org/jawiki/${DATE}/jawiki-${DATE}-pagelinks.sql.gz"
+RUN wget --no-verbose --continue "https://dumps.wikimedia.your.org/jawiki/${DATE}/jawiki-${DATE}-page.sql.gz"
+RUN wget --no-verbose --continue "https://dumps.wikimedia.your.org/jawiki/${DATE}/jawiki-${DATE}-pagelinks.sql.gz"
 
 RUN mkdir ja
 RUN ./gen -lang ja -ip "jawiki-${DATE}-page.sql.gz" -il "jawiki-${DATE}-pagelinks.sql.gz" -o ja
@@ -29,8 +29,8 @@ ARG DATE
 
 COPY --from=app /go/src/github.com/mtgto/pediaroute-go/build/gen .
 
-RUN wget --no-verbose --continue "https://dumps.wikimedia.org/enwiki/${DATE}/enwiki-${DATE}-page.sql.gz"
-RUN wget --no-verbose --continue "https://dumps.wikimedia.org/enwiki/${DATE}/enwiki-${DATE}-pagelinks.sql.gz"
+RUN wget --no-verbose --continue "https://dumps.wikimedia.your.org/enwiki/${DATE}/enwiki-${DATE}-page.sql.gz"
+RUN wget --no-verbose --continue "https://dumps.wikimedia.your.org/enwiki/${DATE}/enwiki-${DATE}-pagelinks.sql.gz"
 
 RUN mkdir en
 RUN ./gen -lang en -ip "enwiki-${DATE}-page.sql.gz" -il "enwiki-${DATE}-pagelinks.sql.gz" -o en
