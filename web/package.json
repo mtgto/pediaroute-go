@@ -29,17 +29,11 @@
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.8.0",
-    "lint-staged": "^10.5.4",
+    "lint-staged": "^11.2.1",
     "parcel": "^2.0.0-rc.0",
     "postcss": "^8.1.0",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
     "typescript": "~4.2.4"
-  },
-  "prettier": {
-    "printWidth": 150,
-    "singleQuote": true,
-    "trailingComma": "all",
-    "tabWidth": 2
   }
 }
