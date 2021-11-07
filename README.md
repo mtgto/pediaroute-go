@@ -8,7 +8,7 @@ You need
 
 - Golang 1.17
 - Make
-- Node.js 14+
+- Node.js 16+
 - yarnpkg
 
 ```console
