@@ -1,8 +1,10 @@
 name: docker-build
 
 on:
-  push:
-    branches: [master]
+  workflow_run:
+    workflows: [ test web ]
+    types:
+      - completed
 
 jobs:
   docker-build:
@@ -20,4 +22,3 @@ jobs:
           file: build/package/app/Dockerfile
           push: true
           tags: mtgto/pediaroute:latest
-
