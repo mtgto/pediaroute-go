@@ -9,6 +9,7 @@ const detectUserLanguage = (fallbackLanguage = 'en'): string => {
 };
 
 export const i18n = createI18n({
+  legacy: false,
   locale: detectUserLanguage(),
   fallbackLocale: 'en',
   messages: {
