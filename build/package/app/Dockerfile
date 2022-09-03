@@ -8,7 +8,7 @@ RUN yarn install
 COPY web .
 RUN yarn build
 
-FROM golang:1.17-bullseye as app
+FROM golang:1.19-bullseye as app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 COPY Makefile go.mod go.sum ./
 RUN go mod download
