@@ -10,7 +10,7 @@ declare module 'vue-router' {
   }
 }
 
-const router = createRouter({
+export const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
@@ -46,10 +46,8 @@ const router = createRouter({
 });
 
 router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
-  if (typeof to.query.lang === 'string') {
-    // TODO
-    //i18n.locale = to.query.lang;
-    rootI18n.locale = to.query.lang;
+  if (to.query.lang === 'ja' || to.query.lang === 'en') {
+    rootI18n.locale.value = to.query.lang;
   }
   // TODO
   if (typeof to.meta.title === 'string') {
@@ -59,5 +57,3 @@ router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, n
   }
   next();
 });
-
-export default router;

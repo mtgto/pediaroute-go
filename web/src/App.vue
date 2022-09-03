@@ -107,7 +107,7 @@ article ol li:first-of-type {
 article ol li {
   font-size: 18pt;
   padding-bottom: 32px;
-  background: url(../public/arrow.png) no-repeat center bottom;
+  background: url(/arrow.png) no-repeat center bottom;
 }
 
 article ol li:last-child {

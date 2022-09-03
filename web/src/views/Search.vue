@@ -145,7 +145,7 @@ export default defineComponent({
         search();
       },
     );
-    return { routes, failureReason, time, search, tweetFoundUrl, tweetNotFoundUrl, t: i18n.t };
+    return { routes, failureReason, time, search, tweetFoundUrl, tweetNotFoundUrl, t: i18n.t, locale: i18n.locale };
   },
 });
 </script>

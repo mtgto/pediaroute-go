@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "parcel serve public/index.html",
-    "build": "yarn run clean && parcel build --no-scope-hoist public/index.html",
+    "serve": "vite public/index.html",
+    "build": "yarn run clean && vite build",
     "build:dev": "yarn run build --dist-dir ../cmd/web/assets",
     "clean": "yarn run rimraf ../cmd/web/assets",
     "lint": "eslint",
@@ -18,19 +18,19 @@
     "vuex": "^4.0.0"
   },
   "devDependencies": {
-    "@parcel/transformer-vue": "^2.0.0",
+    "@intlify/vite-plugin-vue-i18n": "^6.0.1",
     "@types/node": "^16.11.7",
     "@typescript-eslint/eslint-plugin": "^4.21.0",
     "@typescript-eslint/parser": "^4.21.0",
-    "autoprefixer": "^10.2.5",
+    "@vitejs/plugin-vue": "^3.0.3",
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.8.0",
     "lint-staged": "^11.2.1",
-    "parcel": "^2.0.0",
-    "postcss": "^8.1.0",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
-    "typescript": "~4.2.4"
+    "typescript": "~4.2.4",
+    "vite": "^3.0.9",
+    "vue-tsc": "^0.40.6"
   }
 }
