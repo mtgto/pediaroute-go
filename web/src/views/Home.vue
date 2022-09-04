@@ -40,19 +40,18 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
-import { State } from '../store';
-import { useStore } from 'vuex';
+import { useMainStore } from '../store';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
-    const store = useStore<State>();
+    const state = useMainStore();
     const i18n = useI18n();
     const router = useRouter();
 
-    const wordFrom = computed((): string => store.state.wordFrom);
-    const wordTo = computed((): string => store.state.wordTo);
+    const wordFrom = computed((): string => state.wordFrom);
+    const wordTo = computed((): string => state.wordTo);
     const chooseEnglish = () => {
       i18n.locale.value = 'en';
     };
@@ -64,7 +63,7 @@ export default defineComponent({
         .then((response) => response.json())
         .then((word) => {
           if (typeof word === 'string') {
-            store.commit('setWordFrom', word);
+            state.setWordFrom(word);
           }
         })
         .catch((error) => console.log(error));
@@ -74,23 +73,23 @@ export default defineComponent({
         .then((response) => response.json())
         .then((word) => {
           if (typeof word === 'string') {
-            store.commit('setWordTo', word);
+            state.setWordTo(word);
           }
         })
         .catch((error) => console.log(error));
     };
     const setWordFrom = (e: Event) => {
       if (e.target instanceof HTMLInputElement) {
-        store.commit('setWordFrom', e.target.value);
+        state.setWordFrom(e.target.value);
       }
     };
     const setWordTo = (e: Event) => {
       if (e.target instanceof HTMLInputElement) {
-        store.commit('setWordTo', e.target.value);
+        state.setWordTo(e.target.value);
       }
     };
     const search = async () => {
-      await router.push({ path: '/search', query: { lang: i18n.locale.value, wordFrom: store.state.wordFrom, wordTo: store.state.wordTo } });
+      await router.push({ path: '/search', query: { lang: i18n.locale.value, wordFrom: state.wordFrom, wordTo: state.wordTo } });
     };
     return {
       wordFrom,

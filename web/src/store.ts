@@ -1,23 +1,22 @@
-import { createStore } from 'vuex';
+import { defineStore } from 'pinia';
 
 export interface State {
   wordFrom: string;
   wordTo: string;
 }
 
-export const store = createStore({
+export const useMainStore = defineStore('main', {
   //strict: process.env.NODE_ENV !== 'production',
-  state: {
+  state: () => ({
     wordFrom: '',
     wordTo: '',
-  },
-  mutations: {
-    setWordFrom(state, wordFrom: string) {
-      state.wordFrom = wordFrom;
+  }),
+  actions: {
+    setWordFrom(wordFrom: string) {
+      this.wordFrom = wordFrom;
     },
-    setWordTo(state, wordTo: string) {
-      state.wordTo = wordTo;
+    setWordTo(wordTo: string) {
+      this.wordTo = wordTo;
     },
   },
-  actions: {},
 });

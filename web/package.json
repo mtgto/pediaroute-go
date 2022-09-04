@@ -3,19 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vite public/index.html",
+    "serve": "vite",
     "build": "yarn run clean && vite build",
-    "build:dev": "yarn run build --dist-dir ../cmd/web/assets",
+    "build:dev": "yarn run build --config vite.dev.config.ts",
     "clean": "yarn run rimraf ../cmd/web/assets",
     "lint": "eslint",
     "format:eslint": "eslint '*.cjs' 'src/**/*.{ts,vue}' --fix",
     "format:prettier": "prettier '*.cjs' 'src/**/*.{ts,vue}' --write"
   },
   "dependencies": {
+    "pinia": "^2.0.21",
     "vue": "^3.1.2",
     "vue-i18n": "^9.1.2",
-    "vue-router": "^4.0.6",
-    "vuex": "^4.0.0"
+    "vue-router": "^4.0.6"
   },
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "^6.0.1",
