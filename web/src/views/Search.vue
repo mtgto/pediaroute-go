@@ -18,10 +18,9 @@
     <aside id="links">
       <ul>
         <li>
-          <router-link
-            :to="{ path: '/search', query: { lang: $i18n.locale, wordFrom: wordTo, wordTo: wordFrom } }"
-            v-text="t('message.searchInReverse', { wordFrom, wordTo })"
-          />
+          <router-link :to="{ path: '/search', query: { lang: $i18n.locale, wordFrom: wordTo, wordTo: wordFrom } }">{{
+            t('message.searchInReverse', { wordFrom, wordTo })
+          }}</router-link>
         </li>
         <li v-if="routes">
           <a :href="tweetFoundUrl(routes)" target="_blank" v-text="t('message.tweet')" />
