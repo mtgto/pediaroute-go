@@ -13,12 +13,12 @@ import (
 
 // Data structure
 type Wikipedia struct {
-	pages                   []core.Page
-	titleFile               *os.File
-	linkFile                *os.File
+	pages     []core.Page
+	titleFile *os.File
+	linkFile  *os.File
 }
 
-var NotFound = errors.New("Not found")
+var NotFound = errors.New("not found.")
 
 const MaxDepth = 6
 

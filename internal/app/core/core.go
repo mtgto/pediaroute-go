@@ -4,19 +4,18 @@ import (
 	"bufio"
 	"encoding/binary"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 )
 
 // WikipediaFiles defines JSON structure for data set of language.
 type Language struct {
-	Id                          string `json:"id"`
-	PageCount                   uint32 `json:"page_count"`
-	PageFile                    string `json:"page_file"`
-	TitleFile                   string `json:"title_file"`
-	LinkCount                   uint64 `json:"link_count"`
-	LinkFile                    string `json:"link_file"`
+	Id        string `json:"id"`
+	PageCount uint32 `json:"page_count"`
+	PageFile  string `json:"page_file"`
+	TitleFile string `json:"title_file"`
+	LinkCount uint64 `json:"link_count"`
+	LinkFile  string `json:"link_file"`
 }
 
 type Page struct {
@@ -79,7 +78,7 @@ func LoadPages(pageCount uint32, in string) []Page {
 
 // load config.json
 func LoadLanguage(in string) (*Language, error) {
-	bytes, err := ioutil.ReadFile(in)
+	bytes, err := os.ReadFile(in)
 	if err != nil {
 		log.Fatal(err)
 	}

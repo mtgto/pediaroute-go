@@ -9,7 +9,6 @@ import (
 	"github.com/mtgto/pediaroute-go/internal/app/core"
 	"github.com/xwb1989/sqlparser"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -33,11 +32,6 @@ type pageLink struct {
 	// id in wikipedia
 	from  int
 	title string
-}
-
-type pageTitleToIndex struct {
-	title string
-	index uint32
 }
 
 func Run(languageId, pageSQLFile, pageLinkSQLFile, outDir string) error {
@@ -74,7 +68,7 @@ func Run(languageId, pageSQLFile, pageLinkSQLFile, outDir string) error {
 	if err != nil {
 		panic(err)
 	}
-	err = ioutil.WriteFile(configFile, configBytes, 0644)
+	err = os.WriteFile(configFile, configBytes, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -95,8 +89,6 @@ func parsePageStatement(stmt *sqlparser.Insert) ([]page, error) {
 		columnID = iota
 		columnNamespace
 		columnTitle
-		columnRestrictions
-		columnCounter
 		columnIsRedirect
 	)
 	err = sqlparser.Walk(func(node sqlparser.SQLNode) (bool, error) {
