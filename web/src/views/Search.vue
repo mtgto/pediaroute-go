@@ -2,8 +2,8 @@
   <div>
     <header>
       <h1><span>P</span>edia <span>R</span>oute.com</h1>
-      <p v-if="routes" v-text="t('message.searchResult', { wordFrom, wordTo, second: time / 1000 })" />
-      <p v-else v-text="t('message.searching', { wordFrom, wordTo })" />
+      <p v-if="routes" v-t="{ path: 'message.searchResult', args: { wordFrom, wordTo, second: time / 1000 }}" />
+      <p v-else v-t="{ path: 'message.searching', args: { wordFrom, wordTo }}" />
     </header>
     <article v-if="routes">
       <ol start="0">
@@ -23,10 +23,10 @@
           }}</router-link>
         </li>
         <li v-if="routes">
-          <a :href="tweetFoundUrl(routes)" target="_blank" v-text="t('message.tweet')" />
+          <a v-t="{ path: 'message.tweet' }" :href="tweetFoundUrl(routes)" target="_blank" />
         </li>
         <li v-else>
-          <a :href="tweetNotFoundUrl()" target="_blank" v-text="t('message.tweet')" />
+          <a v-t="{ path: 'message.tweet' }" :href="tweetNotFoundUrl()" target="_blank" />
         </li>
       </ul>
     </aside>
