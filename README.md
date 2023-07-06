@@ -6,9 +6,9 @@ Source of https://pediaroute.com/ .
 
 You need
 
-- Golang 1.19
+- Golang 1.26
 - Make
-- Node.js 16+
+- Node.js 24+
 - yarnpkg
 
 ```console

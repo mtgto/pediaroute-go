@@ -1,14 +1,14 @@
 
 # docker build --file build/package/app/Dockerfile --tag mtgto/pediaroute:latest .
 
-FROM node:16-bullseye as asset
+FROM node:24-bookworm AS asset
 WORKDIR /node
 COPY web/package.json web/yarn.lock /node/
 RUN yarn install
 COPY web .
 RUN yarn build
 
-FROM golang:1.19-bullseye as app
+FROM golang:1.26-bookworm AS app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 COPY Makefile go.mod go.sum ./
 RUN go mod download
