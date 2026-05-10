@@ -114,7 +114,7 @@ export default defineComponent({
           time.value = new Date().getTime() - start;
         });
     };
-    const tweetFoundUrl = (route: string[]): string => {
+    const tweetFoundUrl = (route: readonly string[]): string => {
       return tweetUrl(
         i18n.t('message.tweetFind', {
           wordFrom: props.wordFrom,
