@@ -91,8 +91,13 @@ const search = async () => {
     });
 };
 
-const searchPageUrl = (): string =>
-  `https://pediaroute.com/search?lang=${encodeURI(locale.value)}&wordFrom=${encodeURIComponent(props.wordFrom)}&wordTo=${encodeURIComponent(props.wordTo)}`;
+const searchPageUrl = (): string => {
+  const url = new URL('https://pediaroute.com/search');
+  url.searchParams.set('lang', locale.value);
+  url.searchParams.set('wordFrom', props.wordFrom);
+  url.searchParams.set('wordTo', props.wordTo);
+  return url.toString();
+};
 
 const tweetFoundUrl = (route: readonly string[]): string =>
   buildTweetUrl(t('message.tweetFind', { wordFrom: props.wordFrom, wordTo: props.wordTo, length: `${route.length - 1}` }), searchPageUrl());
