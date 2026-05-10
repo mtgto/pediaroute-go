@@ -2,31 +2,31 @@
   <div>
     <header>
       <h1><span>P</span>edia <span>R</span>oute.com</h1>
-      <p>{{ $t('message.header') }}</p>
+      <p>{{ t('message.header') }}</p>
     </header>
     <article>
       <fieldset>
         <p>
           <label>
             <input type="text" class="word" name="wordFrom" :value="wordFrom" @input="setWordFrom" />
-            <button class="random" :title="$t('message.buttonRandom')" @click="getRandomFrom">
+            <button class="random" :title="t('message.buttonRandom')" @click="getRandomFrom">
               <img src="../assets/baseline-shuffle-24px.svg" />
             </button>
-            {{ $t('message.searchFrom') }}
+            {{ t('message.searchFrom') }}
           </label>
         </p>
         <p>
           <label>
             <input type="text" class="word" name="wordTo" :value="wordTo" @input="setWordTo" />
-            <button class="random" :title="$t('message.buttonRandom')" @click="getRandomTo">
+            <button class="random" :title="t('message.buttonRandom')" @click="getRandomTo">
               <img src="../assets/baseline-shuffle-24px.svg" />
             </button>
-            {{ $t('message.searchTo') }}
+            {{ t('message.searchTo') }}
           </label>
         </p>
       </fieldset>
       <div class="center">
-        <input type="button" class="submit" :value="$t('message.search')" @click="search" />
+        <input type="button" class="submit" :value="t('message.search')" @click="search" />
       </div>
       <div class="center">
         <p>
@@ -45,7 +45,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 const state = useMainStore();
-const { locale } = useI18n();
+const { t, locale } = useI18n();
 const router = useRouter();
 
 const wordFrom = computed(() => state.wordFrom);
