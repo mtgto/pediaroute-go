@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "serve": "vite",
-    "build": "yarn run clean && vite build",
-    "build:dev": "yarn run build --config vite.dev.config.ts",
-    "clean": "yarn run rimraf ../cmd/web/assets",
+    "build": "pnpm run clean && vite build",
+    "build:dev": "pnpm run build --config vite.dev.config.ts",
+    "clean": "pnpm run rimraf ../cmd/web/assets",
     "lint": "eslint",
     "format:eslint": "eslint '*.cjs' 'src/**/*.{ts,vue}' --fix",
     "format:prettier": "prettier '*.cjs' 'src/**/*.{ts,vue}' --write"

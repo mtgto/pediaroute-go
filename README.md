@@ -9,10 +9,10 @@ You need
 - Golang 1.26
 - Make
 - Node.js 24+
-- yarnpkg
+- pnpm
 
 ```console
-$ cd web && yarn install && yarn build:dev
+$ cd web && pnpm install && pnpm build:dev
 $ make
 ```
 

@@ -11,26 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+        uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
         with:
-          node-version: 14
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+          version: 10
+          cache: true
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "dir=$(pnpm store path)" >> $GITHUB_OUTPUT
         working-directory: ./web
-      - uses: actions/cache@v2
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: yarn install
-        run: yarn --prefer-offline
+      - name: pnpm install
+        run: pnpm install --frozen-lockfile
         working-directory: ./web
       - name: Lint
-        run: yarn lint
+        run: pnpm lint
         working-directory: ./web
         env:
           NPM_CONFIG_ESLINT_ARGS: "-f @jamesacarr/github-actions"

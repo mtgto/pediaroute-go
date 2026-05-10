@@ -3,10 +3,10 @@
 
 FROM node:24-bookworm AS asset
 WORKDIR /node
-COPY web/package.json web/yarn.lock /node/
-RUN yarn install
+COPY web/package.json web/pnpm-lock.yaml /node/
+RUN corepack enable && pnpm install --frozen-lockfile
 COPY web .
-RUN yarn build
+RUN pnpm build
 
 FROM golang:1.26-bookworm AS app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go

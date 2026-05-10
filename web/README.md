@@ -2,27 +2,27 @@
 
 ## Project setup
 ```
-yarn install
+pnpm install
 ```
 
 ### Compiles and hot-reloads for development
 ```
-yarn run serve
+pnpm run serve
 ```
 
 ### Compiles and minifies for production
 ```
-yarn run build
+pnpm run build
 ```
 
 ### Run your tests
 ```
-yarn run test
+pnpm run test
 ```
 
 ### Lints and fixes files
 ```
-yarn run lint
+pnpm run lint
 ```
 
 ### Customize configuration
