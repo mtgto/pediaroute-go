@@ -29,5 +29,6 @@ jobs:
       - name: Lint
         run: pnpm lint
         working-directory: ./web
-        env:
-          NPM_CONFIG_ESLINT_ARGS: "-f @jamesacarr/github-actions"
+      - name: Format check
+        run: pnpm oxfmt --check src/
+        working-directory: ./web

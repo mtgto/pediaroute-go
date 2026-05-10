@@ -7,9 +7,8 @@
     "build": "pnpm run clean && vite build",
     "build:dev": "pnpm run build --config vite.dev.config.ts",
     "clean": "pnpm run rimraf ../cmd/web/assets",
-    "lint": "eslint",
-    "format:eslint": "eslint '*.cjs' 'src/**/*.{ts,vue}' --fix",
-    "format:prettier": "prettier '*.cjs' 'src/**/*.{ts,vue}' --write"
+    "lint": "oxlint src/",
+    "format": "oxfmt src/"
   },
   "dependencies": {
     "pinia": "^3.0.4",
@@ -19,14 +18,9 @@
   },
   "devDependencies": {
     "@types/node": "^18.16.19",
-    "@typescript-eslint/eslint-plugin": "^5.36.1",
-    "@typescript-eslint/parser": "^5.36.1",
     "@vitejs/plugin-vue": "^6.0.6",
-    "eslint": "^8.23.0",
-    "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-vue": "^9.4.0",
-    "lint-staged": "^13.2.2",
-    "prettier": "^2.2.1",
+    "oxfmt": "latest",
+    "oxlint": "latest",
     "rimraf": "^3.0.2",
     "typescript": "~5.1.3",
     "vite": "^8.0.11",

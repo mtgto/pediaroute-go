@@ -2,8 +2,8 @@
   <div>
     <header>
       <h1><span>P</span>edia <span>R</span>oute.com</h1>
-      <p v-if="routes" v-t="{ path: 'message.searchResult', args: { wordFrom, wordTo, second: time / 1000 }}" />
-      <p v-else v-t="{ path: 'message.searching', args: { wordFrom, wordTo }}" />
+      <p v-if="routes" v-t="{ path: 'message.searchResult', args: { wordFrom, wordTo, second: time / 1000 } }" />
+      <p v-else v-t="{ path: 'message.searching', args: { wordFrom, wordTo } }" />
     </header>
     <article v-if="routes">
       <ol start="0">
@@ -43,7 +43,7 @@ export const ErrorCode = {
   NotFoundTo: 2,
   NotFoundRoute: 3,
 } as const;
-type ErrorCodeType = typeof ErrorCode[keyof typeof ErrorCode];
+type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 interface Result {
   readonly route: ReadonlyArray<string> | undefined;
