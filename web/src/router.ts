@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteLocationNormalized } from 'vue-router';
+import { createRouter, createWebHistory, NavigationGuardWithThis, RouteLocationNormalized } from 'vue-router';
 import { i18n } from './i18n';
 import About from './views/About.vue';
 import Home from './views/Home.vue';
@@ -45,7 +45,7 @@ export const router = createRouter({
   ],
 });
 
-router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next) => {
+router.beforeEach((to) => {
   if (to.query.lang === 'ja' || to.query.lang === 'en') {
     i18n.global.locale.value = to.query.lang;
   }
@@ -55,5 +55,4 @@ router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, n
   } else {
     document.title = to.meta.title(to);
   }
-  next();
 });
