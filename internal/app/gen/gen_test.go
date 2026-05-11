@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/mtgto/pediaroute-go/internal/app/core"
@@ -91,41 +92,36 @@ func TestLoadPages(t *testing.T) {
 	}
 }
 
-func TestBuildIDIndex(t *testing.T) {
+func TestBuildIndex(t *testing.T) {
 	// pages[0]="C"(id=3), pages[1]="A"(id=1), pages[2]="B"(id=2) — order matches array index
 	pages := []page{{id: 3, title: "C"}, {id: 1, title: "A"}, {id: 2, title: "B"}}
-	idx := buildIDIndex(pages)
 
-	if idx[0].id != 1 || idx[1].id != 2 || idx[2].id != 3 {
-		t.Errorf("idIndex not sorted: %v", idx)
+	idIdx := buildIndex(pages, func(p page) int32 { return p.id })
+	if idIdx[0].key != 1 || idIdx[1].key != 2 || idIdx[2].key != 3 {
+		t.Errorf("idIndex not sorted: %v", idIdx)
 	}
 	// id=2 is pages[2] (title="B"), so arrayIndex == 2
-	i, ok := lookupID(idx, 2)
+	i, ok := lookupIndex(idIdx, int32(2))
 	if !ok || i != 2 {
-		t.Errorf("lookupID(2): got (%d, %v), want (2, true)", i, ok)
+		t.Errorf("lookupIndex id=2: got (%d, %v), want (2, true)", i, ok)
 	}
-	_, ok = lookupID(idx, 99)
+	_, ok = lookupIndex(idIdx, int32(99))
 	if ok {
-		t.Error("lookupID(99) should return false")
+		t.Error("lookupIndex id=99 should return false")
 	}
-}
 
-func TestBuildTitleIndex(t *testing.T) {
-	// pages[0]="C"(id=1), pages[1]="A"(id=2), pages[2]="B"(id=3) — order matches array index
-	pages := []page{{id: 1, title: "C"}, {id: 2, title: "A"}, {id: 3, title: "B"}}
-	idx := buildTitleIndex(pages)
-
-	if idx[0].title != "A" || idx[1].title != "B" || idx[2].title != "C" {
-		t.Errorf("titleIndex not sorted: %v", idx)
+	titleIdx := buildIndex(pages, func(p page) string { return p.title })
+	if titleIdx[0].key != "A" || titleIdx[1].key != "B" || titleIdx[2].key != "C" {
+		t.Errorf("titleIndex not sorted: %v", titleIdx)
 	}
 	// "B" is pages[2] (id=3), so arrayIndex == 2
-	i, ok := lookupTitle(idx, "B")
+	i, ok = lookupIndex(titleIdx, "B")
 	if !ok || i != 2 {
-		t.Errorf("lookupTitle('B'): got (%d, %v), want (2, true)", i, ok)
+		t.Errorf("lookupIndex title='B': got (%d, %v), want (2, true)", i, ok)
 	}
-	_, ok = lookupTitle(idx, "Z")
+	_, ok = lookupIndex(titleIdx, "Z")
 	if ok {
-		t.Error("lookupTitle('Z') should return false")
+		t.Error("lookupIndex title='Z' should return false")
 	}
 }
 
@@ -140,16 +136,18 @@ func TestBuildTitleIndex(t *testing.T) {
 // Pages sorted by lowercase title: A(0) B(1) C(2) D(3)
 //
 // link.dat forward section (indices):  1 2 | 2 | 0
-//   page 0 (A): fwdIdx=0 len=2  → B(1), C(2)
-//   page 1 (B): fwdIdx=2 len=1  → C(2)
-//   page 2 (C): fwdIdx=0 len=0  (no outgoing)
-//   page 3 (D): fwdIdx=3 len=1  → A(0)
+//
+//	page 0 (A): fwdIdx=0 len=2  → B(1), C(2)
+//	page 1 (B): fwdIdx=2 len=1  → C(2)
+//	page 2 (C): fwdIdx=0 len=0  (no outgoing)
+//	page 3 (D): fwdIdx=3 len=1  → A(0)
 //
 // link.dat backward section (indices): 3 | 0 | 0 1
-//   page 0 (A): bwdIdx=4 len=1  ← D(3)
-//   page 1 (B): bwdIdx=5 len=1  ← A(0)
-//   page 2 (C): bwdIdx=6 len=2  ← A(0), B(1)
-//   page 3 (D): bwdIdx=0 len=0  (no incoming)
+//
+//	page 0 (A): bwdIdx=4 len=1  ← D(3)
+//	page 1 (B): bwdIdx=5 len=1  ← A(0)
+//	page 2 (C): bwdIdx=6 len=2  ← A(0), B(1)
+//	page 3 (D): bwdIdx=0 len=0  (no incoming)
 func TestRun(t *testing.T) {
 	pageSQLFile := writeGzipSQL(t,
 		"INSERT INTO `page` VALUES (1,0,'A',0),(2,0,'B',0),(3,0,'C',0),(4,0,'D',1),(99,1,'Talk:X',0)")
@@ -162,7 +160,7 @@ func TestRun(t *testing.T) {
 	}
 
 	// --- config.json ---
-	configBytes, err := os.ReadFile(outDir + "/config.json")
+	configBytes, err := os.ReadFile(filepath.Join(outDir, "config.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +178,7 @@ func TestRun(t *testing.T) {
 	// --- title.dat ---
 	// sorted: A B C D, each null-terminated
 	wantTitle := []byte("A\x00B\x00C\x00D\x00")
-	gotTitle, _ := os.ReadFile(outDir + "/title.dat")
+	gotTitle, _ := os.ReadFile(filepath.Join(outDir, "title.dat"))
 	if !bytes.Equal(gotTitle, wantTitle) {
 		t.Errorf("title.dat: want %q, got %q", wantTitle, gotTitle)
 	}
@@ -190,7 +188,7 @@ func TestRun(t *testing.T) {
 	for _, v := range []uint32{1, 2, 2, 0, 3, 0, 0, 1} {
 		binary.Write(&wantLinkBuf, binary.LittleEndian, v)
 	}
-	gotLink, _ := os.ReadFile(outDir + "/link.dat")
+	gotLink, _ := os.ReadFile(filepath.Join(outDir, "link.dat"))
 	if !bytes.Equal(gotLink, wantLinkBuf.Bytes()) {
 		t.Errorf("link.dat:\n  want %x\n  got  %x", wantLinkBuf.Bytes(), gotLink)
 	}
@@ -223,7 +221,7 @@ func TestRun(t *testing.T) {
 		binary.Write(&wantPageBuf, binary.LittleEndian, p.bwdIdx)
 		binary.Write(&wantPageBuf, binary.LittleEndian, p.bwdLen)
 	}
-	gotPage, _ := os.ReadFile(outDir + "/page.dat")
+	gotPage, _ := os.ReadFile(filepath.Join(outDir, "page.dat"))
 	if !bytes.Equal(gotPage, wantPageBuf.Bytes()) {
 		t.Errorf("page.dat:\n  want %x\n  got  %x", wantPageBuf.Bytes(), gotPage)
 	}
@@ -244,7 +242,7 @@ func TestRunMultipleStatements(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	configBytes, _ := os.ReadFile(outDir + "/config.json")
+	configBytes, _ := os.ReadFile(filepath.Join(outDir, "config.json"))
 	var lang core.Language
 	if err := json.Unmarshal(configBytes, &lang); err != nil {
 		t.Fatal(err)

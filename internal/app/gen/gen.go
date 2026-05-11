@@ -2,6 +2,7 @@ package gen
 
 import (
 	"bufio"
+	"cmp"
 	"compress/gzip"
 	"encoding/binary"
 	"encoding/json"
@@ -33,13 +34,8 @@ type pageLink struct {
 	title string
 }
 
-type idIndexEntry struct {
-	id    int32
-	index uint32
-}
-
-type titleIndexEntry struct {
-	title string
+type indexEntry[K cmp.Ordered] struct {
+	key   K
 	index uint32
 }
 
@@ -48,44 +44,19 @@ type linkPair struct {
 	to   uint32
 }
 
-func buildIDIndex(pages []page) []idIndexEntry {
-	idIndex := make([]idIndexEntry, len(pages))
+func buildIndex[K cmp.Ordered](pages []page, keyFn func(page) K) []indexEntry[K] {
+	idx := make([]indexEntry[K], len(pages))
 	for i, p := range pages {
-		idIndex[i] = idIndexEntry{id: p.id, index: uint32(i)}
+		idx[i] = indexEntry[K]{key: keyFn(p), index: uint32(i)}
 	}
-	sort.Slice(idIndex, func(i, j int) bool {
-		return idIndex[i].id < idIndex[j].id
-	})
-	return idIndex
+	sort.Slice(idx, func(i, j int) bool { return idx[i].key < idx[j].key })
+	return idx
 }
 
-func buildTitleIndex(pages []page) []titleIndexEntry {
-	titleIndex := make([]titleIndexEntry, len(pages))
-	for i, p := range pages {
-		titleIndex[i] = titleIndexEntry{title: p.title, index: uint32(i)}
-	}
-	sort.Slice(titleIndex, func(i, j int) bool {
-		return titleIndex[i].title < titleIndex[j].title
-	})
-	return titleIndex
-}
-
-func lookupID(idIndex []idIndexEntry, id int) (uint32, bool) {
-	i := sort.Search(len(idIndex), func(k int) bool {
-		return int(idIndex[k].id) >= id
-	})
-	if i < len(idIndex) && int(idIndex[i].id) == id {
-		return idIndex[i].index, true
-	}
-	return 0, false
-}
-
-func lookupTitle(titleIndex []titleIndexEntry, title string) (uint32, bool) {
-	i := sort.Search(len(titleIndex), func(k int) bool {
-		return titleIndex[k].title >= title
-	})
-	if i < len(titleIndex) && titleIndex[i].title == title {
-		return titleIndex[i].index, true
+func lookupIndex[K cmp.Ordered](idx []indexEntry[K], key K) (uint32, bool) {
+	i := sort.Search(len(idx), func(k int) bool { return idx[k].key >= key })
+	if i < len(idx) && idx[i].key == key {
+		return idx[i].index, true
 	}
 	return 0, false
 }
@@ -104,8 +75,8 @@ func Run(languageId, pageSQLFile, pageLinkSQLFile, outDir string) error {
 	pages = loadPages(pageSQLFile)
 	language.PageCount = uint32(len(pages))
 
-	idIndex := buildIDIndex(pages)
-	titleIndex := buildTitleIndex(pages)
+	idIndex := buildIndex(pages, func(p page) int32 { return p.id })
+	titleIndex := buildIndex(pages, func(p page) string { return p.title })
 	log.Printf("%d pages.\n", language.PageCount)
 
 	pageLinkFile := path.Join(outDir, language.LinkFile)
@@ -213,10 +184,19 @@ func loadPages(in string) []page {
 			allPages = append(allPages, pages...)
 		}
 	}
-	// sort all pages by title in lowercase
-	sort.Slice(allPages, func(i, j int) bool {
-		return strings.ToLower(allPages[i].title) < strings.ToLower(allPages[j].title)
-	})
+	// Pre-compute lowercase once; O(N log N) comparisons would each allocate otherwise.
+	tmp := make([]struct {
+		p     page
+		lower string
+	}, len(allPages))
+	for i, p := range allPages {
+		tmp[i].p = p
+		tmp[i].lower = strings.ToLower(p.title)
+	}
+	sort.Slice(tmp, func(i, j int) bool { return tmp[i].lower < tmp[j].lower })
+	for i, t := range tmp {
+		allPages[i] = t.p
+	}
 	return allPages
 }
 
@@ -270,13 +250,17 @@ func parsePageLinkStatement(stmt *sqlparser.Insert) ([]pageLink, error) {
 	return pagelinks, err
 }
 
-func generatePageLinks(in string, out string, pages []page, idIndex []idIndexEntry, titleIndex []titleIndexEntry) uint64 {
-	// Phase A: stream pagelinks SQL and write valid (fromIndex, toIndex) pairs to temp file
+func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry[int32], titleIndex []indexEntry[string]) uint64 {
+	// Pairs are written to a temp file during parsing to avoid peak memory contention
+	// with the SQL parser; the full pairs slice is loaded only after parsing completes.
 	tmpFile, err := os.CreateTemp("", "pediaroute-pairs-*")
 	if err != nil {
 		panic(err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		tmpFile.Close()
+		os.Remove(tmpFile.Name())
+	}()
 
 	pairWriter := bufio.NewWriterSize(tmpFile, 4*1024*1024)
 
@@ -302,11 +286,11 @@ func generatePageLinks(in string, out string, pages []page, idIndex []idIndexEnt
 				panic(err)
 			}
 			for _, pl := range pageLinks {
-				toIndex, ok := lookupTitle(titleIndex, pl.title)
+				toIndex, ok := lookupIndex(titleIndex, pl.title)
 				if !ok {
 					continue
 				}
-				fromIndex, ok := lookupID(idIndex, pl.from)
+				fromIndex, ok := lookupIndex(idIndex, int32(pl.from))
 				if !ok {
 					continue
 				}
@@ -323,7 +307,6 @@ func generatePageLinks(in string, out string, pages []page, idIndex []idIndexEnt
 		panic(err)
 	}
 
-	// Phase B: read all pairs into memory
 	fi, err := tmpFile.Stat()
 	if err != nil {
 		panic(err)
@@ -345,9 +328,7 @@ func generatePageLinks(in string, out string, pages []page, idIndex []idIndexEnt
 			panic(err)
 		}
 	}
-	tmpFile.Close()
 
-	// Phase C: open output file
 	fp, err := os.Create(out)
 	if err != nil {
 		panic(err)
@@ -355,7 +336,6 @@ func generatePageLinks(in string, out string, pages []page, idIndex []idIndexEnt
 	defer fp.Close()
 	linkWriter := bufio.NewWriterSize(fp, 4*1024*1024)
 
-	// Phase D: sort by from, write forward links
 	sort.Slice(pairs, func(i, j int) bool {
 		if pairs[i].from != pairs[j].from {
 			return pairs[i].from < pairs[j].from
@@ -379,7 +359,6 @@ func generatePageLinks(in string, out string, pages []page, idIndex []idIndexEnt
 		i = j
 	}
 
-	// Phase E: sort by to, write backward links
 	sort.Slice(pairs, func(i, j int) bool {
 		if pairs[i].to != pairs[j].to {
 			return pairs[i].to < pairs[j].to
