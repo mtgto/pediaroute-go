@@ -8,13 +8,14 @@ import (
 	"github.com/mtgto/pediaroute-go/internal/app/gen"
 )
 
-// ./gen -ip page.sql.gz -il pagelinks.sql.gz -o [directory]
+// ./gen -ip page.sql.gz -il pagelinks.sql.gz [-ilt linktarget.sql.gz] -o [directory]
 func main() {
 	var (
-		language     = flag.String("lang", "", "Language ID (ja or en)")
-		pageFile     = flag.String("ip", "", "File path of page.sql.gz")
-		pageLinkFile = flag.String("il", "", "File path of pagelinks.sql.gz")
-		outDir       = flag.String("o", "", "Output directory")
+		language          = flag.String("lang", "", "Language ID (ja or en)")
+		pageFile          = flag.String("ip", "", "File path of page.sql.gz")
+		pageLinkFile      = flag.String("il", "", "File path of pagelinks.sql.gz")
+		linktargetSQLFile = flag.String("ilt", "", "File path of linktarget.sql.gz (new MediaWiki format)")
+		outDir            = flag.String("o", "", "Output directory")
 	)
 	flag.Parse()
 	if fileMode, err := os.Stat(*pageFile); err != nil || !fileMode.Mode().IsRegular() {
@@ -27,10 +28,17 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+	if *linktargetSQLFile != "" {
+		if fileMode, err := os.Stat(*linktargetSQLFile); err != nil || !fileMode.Mode().IsRegular() {
+			log.Println("linktarget sql file not found.")
+			flag.PrintDefaults()
+			os.Exit(1)
+		}
+	}
 	if fileMode, err := os.Stat(*outDir); err != nil || !fileMode.IsDir() {
 		log.Println("No output directory.")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	gen.Run(*language, *pageFile, *pageLinkFile, *outDir)
+	gen.Run(*language, *pageFile, *pageLinkFile, *linktargetSQLFile, *outDir)
 }

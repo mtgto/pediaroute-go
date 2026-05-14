@@ -155,7 +155,7 @@ func TestRun(t *testing.T) {
 		"INSERT INTO `pagelinks` VALUES (1,0,'B',0),(1,0,'C',0),(2,0,'C',0),(4,0,'A',0),(1,0,'NoSuchPage',0)")
 	outDir := t.TempDir()
 
-	if err := Run("test", pageSQLFile, pageLinkSQLFile, outDir); err != nil {
+	if err := Run("test", pageSQLFile, pageLinkSQLFile, "", outDir); err != nil {
 		t.Fatal(err)
 	}
 
@@ -227,6 +227,57 @@ func TestRun(t *testing.T) {
 	}
 }
 
+// TestRunNewFormat verifies the new MediaWiki Linktables format where pagelinks
+// stores pl_target_id instead of pl_title, resolved via a separate linktarget table.
+//
+// Same graph as TestRun: A->B,C  B->C  D->A (redirect)
+func TestRunNewFormat(t *testing.T) {
+	pageSQLFile := writeGzipSQL(t,
+		"INSERT INTO `page` VALUES (1,0,'A',0),(2,0,'B',0),(3,0,'C',0),(4,0,'D',1),(99,1,'Talk:X',0)")
+	// linktarget: lt_id, lt_namespace, lt_title
+	// lt_id=10 → A, lt_id=20 → B, lt_id=30 → C, lt_id=99 → namespace-1 (filtered)
+	linktargetSQLFile := writeGzipSQL(t,
+		"INSERT INTO `linktarget` VALUES (10,0,'A'),(20,0,'B'),(30,0,'C'),(99,1,'Talk:X')")
+	// new pagelinks: pl_from, pl_from_namespace, pl_target_id
+	pageLinkSQLFile := writeGzipSQL(t,
+		"INSERT INTO `pagelinks` VALUES (1,0,20),(1,0,30),(2,0,30),(4,0,10),(1,0,999)")
+	outDir := t.TempDir()
+
+	if err := Run("test", pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir); err != nil {
+		t.Fatal(err)
+	}
+
+	configBytes, err := os.ReadFile(filepath.Join(outDir, "config.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lang core.Language
+	if err := json.Unmarshal(configBytes, &lang); err != nil {
+		t.Fatal(err)
+	}
+	if lang.PageCount != 4 {
+		t.Errorf("PageCount: want 4, got %d", lang.PageCount)
+	}
+	if lang.LinkCount != 4 {
+		t.Errorf("LinkCount: want 4, got %d", lang.LinkCount)
+	}
+
+	wantTitle := []byte("A\x00B\x00C\x00D\x00")
+	gotTitle, _ := os.ReadFile(filepath.Join(outDir, "title.dat"))
+	if !bytes.Equal(gotTitle, wantTitle) {
+		t.Errorf("title.dat: want %q, got %q", wantTitle, gotTitle)
+	}
+
+	var wantLinkBuf bytes.Buffer
+	for _, v := range []uint32{1, 2, 2, 0, 3, 0, 0, 1} {
+		binary.Write(&wantLinkBuf, binary.LittleEndian, v)
+	}
+	gotLink, _ := os.ReadFile(filepath.Join(outDir, "link.dat"))
+	if !bytes.Equal(gotLink, wantLinkBuf.Bytes()) {
+		t.Errorf("link.dat:\n  want %x\n  got  %x", wantLinkBuf.Bytes(), gotLink)
+	}
+}
+
 // TestRunMultipleStatements verifies that multiple INSERT statements in one SQL file
 // are all processed correctly (real Wikipedia dumps split data across many INSERTs).
 func TestRunMultipleStatements(t *testing.T) {
@@ -238,7 +289,7 @@ func TestRunMultipleStatements(t *testing.T) {
 			"INSERT INTO `pagelinks` VALUES (2,0,'C',0);")
 	outDir := t.TempDir()
 
-	if err := Run("test", pageSQLFile, pageLinkSQLFile, outDir); err != nil {
+	if err := Run("test", pageSQLFile, pageLinkSQLFile, "", outDir); err != nil {
 		t.Fatal(err)
 	}
 

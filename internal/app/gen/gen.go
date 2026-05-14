@@ -61,7 +61,7 @@ func lookupIndex[K cmp.Ordered](idx []indexEntry[K], key K) (uint32, bool) {
 	return 0, false
 }
 
-func Run(languageId, pageSQLFile, pageLinkSQLFile, outDir string) error {
+func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir string) error {
 	language := core.Language{
 		Id:        languageId,
 		PageFile:  "page.dat",
@@ -79,9 +79,16 @@ func Run(languageId, pageSQLFile, pageLinkSQLFile, outDir string) error {
 	titleIndex := buildIndex(pages, func(p page) string { return p.title })
 	log.Printf("%d pages.\n", language.PageCount)
 
+	var linktargets map[uint64]string
+	if linktargetSQLFile != "" {
+		log.Printf("Load \"%s\".\n", linktargetSQLFile)
+		linktargets = loadLinktargets(linktargetSQLFile)
+		log.Printf("%d linktargets.\n", len(linktargets))
+	}
+
 	pageLinkFile := path.Join(outDir, language.LinkFile)
 	log.Printf("Create \"%s\".\n", pageLinkFile)
-	linkCount := generatePageLinks(pageLinkSQLFile, pageLinkFile, pages, idIndex, titleIndex)
+	linkCount := generatePageLinks(pageLinkSQLFile, pageLinkFile, pages, idIndex, titleIndex, linktargets)
 	language.LinkCount = linkCount
 	log.Printf("%v links loaded.\n", language.LinkCount)
 	generatePages(pageFile, titleFile, pages)
@@ -250,7 +257,139 @@ func parsePageLinkStatement(stmt *sqlparser.Insert) ([]pageLink, error) {
 	return pagelinks, err
 }
 
-func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry[int32], titleIndex []indexEntry[string]) uint64 {
+// parseLinktargetStatement parses one INSERT into `linktarget` (lt_id, lt_namespace, lt_title)
+// and returns a map from lt_id to lt_title for namespace-0 entries only.
+func parseLinktargetStatement(stmt *sqlparser.Insert) (map[uint64]string, error) {
+	result := make(map[uint64]string)
+	var columnIndex int
+	var ltID uint64
+	var ltNamespace int
+	var ltTitle string
+	var err error
+	const (
+		columnLtID = iota
+		columnLtNamespace
+		columnLtTitle
+	)
+	err = sqlparser.Walk(func(node sqlparser.SQLNode) (bool, error) {
+		switch node := node.(type) {
+		case sqlparser.Values, sqlparser.Exprs, *sqlparser.NullVal:
+			return true, nil
+		case sqlparser.ValTuple:
+			columnIndex = 0
+			return true, nil
+		case *sqlparser.SQLVal:
+			switch columnIndex {
+			case columnLtID:
+				v, e := strconv.ParseUint(sqlparser.String(node), 10, 64)
+				if e != nil {
+					panic(fmt.Sprintf("Parse error %s", e))
+				}
+				ltID = v
+			case columnLtNamespace:
+				ltNamespace, err = strconv.Atoi(sqlparser.String(node))
+				if err != nil {
+					panic(fmt.Sprintf("Parse error %s", err))
+				}
+			case columnLtTitle:
+				ltTitle = string(node.Val)
+				if ltNamespace == 0 {
+					result[ltID] = ltTitle
+				}
+			}
+			columnIndex++
+			return false, nil
+		default:
+			panic(fmt.Sprintf("Unknown type! %T", node))
+		}
+	}, stmt.Rows)
+	return result, err
+}
+
+func loadLinktargets(in string) map[uint64]string {
+	result := make(map[uint64]string)
+	file, err := os.Open(in)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	reader, err := gzip.NewReader(file)
+	if err != nil {
+		panic(err)
+	}
+	tokens := sqlparser.NewTokenizer(reader)
+	for {
+		statement, err := sqlparser.ParseNext(tokens)
+		if err == io.EOF {
+			break
+		}
+		if sq, ok := statement.(*sqlparser.Insert); ok {
+			m, err := parseLinktargetStatement(sq)
+			if err != nil {
+				panic(err)
+			}
+			for k, v := range m {
+				result[k] = v
+			}
+		}
+	}
+	return result
+}
+
+// parseNewPageLinkStatement parses one INSERT into the new-format `pagelinks`
+// table (pl_from int, pl_from_namespace int, pl_target_id bigint).
+// It resolves pl_target_id to a title via linktargets and filters out
+// rows where pl_from_namespace != 0 or the target is not in namespace 0.
+func parseNewPageLinkStatement(stmt *sqlparser.Insert, linktargets map[uint64]string) ([]pageLink, error) {
+	pagelinks := make([]pageLink, 0)
+	var columnIndex, from, fromNamespace int
+	var targetID uint64
+	var err error
+	const (
+		columnFrom = iota
+		columnFromNamespace
+		columnTargetID
+	)
+	err = sqlparser.Walk(func(node sqlparser.SQLNode) (bool, error) {
+		switch node := node.(type) {
+		case sqlparser.Values, sqlparser.Exprs, *sqlparser.NullVal:
+			return true, nil
+		case sqlparser.ValTuple:
+			columnIndex = 0
+			return true, nil
+		case *sqlparser.SQLVal:
+			switch columnIndex {
+			case columnFrom:
+				from, err = strconv.Atoi(sqlparser.String(node))
+				if err != nil {
+					panic(fmt.Sprintf("Parse error %s", err))
+				}
+			case columnFromNamespace:
+				fromNamespace, err = strconv.Atoi(sqlparser.String(node))
+				if err != nil {
+					panic(fmt.Sprintf("Parse error %s", err))
+				}
+			case columnTargetID:
+				targetID, err = strconv.ParseUint(sqlparser.String(node), 10, 64)
+				if err != nil {
+					panic(fmt.Sprintf("Parse error %s", err))
+				}
+				if fromNamespace == 0 {
+					if title, ok := linktargets[targetID]; ok {
+						pagelinks = append(pagelinks, pageLink{from: from, title: title})
+					}
+				}
+			}
+			columnIndex++
+			return false, nil
+		default:
+			panic(fmt.Sprintf("Unknown type! %T", node))
+		}
+	}, stmt.Rows)
+	return pagelinks, err
+}
+
+func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry[int32], titleIndex []indexEntry[string], linktargets map[uint64]string) uint64 {
 	// Pairs are written to a temp file during parsing to avoid peak memory contention
 	// with the SQL parser; the full pairs slice is loaded only after parsing completes.
 	tmpFile, err := os.CreateTemp("", "pediaroute-pairs-*")
@@ -281,7 +420,12 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 			break
 		}
 		if sq, ok := statement.(*sqlparser.Insert); ok {
-			pageLinks, err := parsePageLinkStatement(sq)
+			var pageLinks []pageLink
+			if linktargets != nil {
+				pageLinks, err = parseNewPageLinkStatement(sq, linktargets)
+			} else {
+				pageLinks, err = parsePageLinkStatement(sq)
+			}
 			if err != nil {
 				panic(err)
 			}
