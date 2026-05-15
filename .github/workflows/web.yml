@@ -4,10 +4,12 @@ on:
     branches: [master]
     paths:
       - 'web/**'
+      - '.github/workflows/web.yml'
   pull_request:
     branches: [master]
     paths:
       - 'web/**'
+      - '.github/workflows/web.yml'
 
 jobs:
   lint:

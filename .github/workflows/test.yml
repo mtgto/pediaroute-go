@@ -7,12 +7,14 @@ on:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - '.github/workflows/test.yml'
   pull_request:
     branches: [master]
     paths:
       - '**/*.go'
       - 'go.mod'
       - 'go.sum'
+      - '.github/workflows/test.yml'
 
 jobs:
   test:
