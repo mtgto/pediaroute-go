@@ -1,14 +1,14 @@
 
 # docker build --file build/package/app/Dockerfile --tag mtgto/pediaroute:latest .
 
-FROM node:24-bookworm AS asset
+FROM node:24-trixie AS asset
 WORKDIR /node
 COPY web/package.json web/pnpm-lock.yaml /node/
 RUN corepack enable && pnpm install --frozen-lockfile
 COPY web .
 RUN pnpm build
 
-FROM golang:1.26-bookworm AS app
+FROM golang:1.26-trixie AS app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 COPY Makefile go.mod go.sum ./
 RUN go mod download
