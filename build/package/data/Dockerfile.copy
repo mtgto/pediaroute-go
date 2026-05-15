@@ -1,4 +1,4 @@
-FROM tianon/true
+FROM gcr.io/distroless/base-debian13
 
 WORKDIR /data
 COPY ja /data/ja/
