@@ -6,7 +6,7 @@
     "serve": "vite",
     "build": "pnpm run clean && vite build",
     "build:dev": "pnpm run build --config vite.dev.config.ts",
-    "clean": "pnpm run rimraf ../cmd/web/assets",
+    "clean": "pnpm exec rimraf ../cmd/web/assets",
     "lint": "oxlint src/",
     "format": "oxfmt src/"
   },
