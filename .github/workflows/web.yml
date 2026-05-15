@@ -1,9 +1,15 @@
 name: web
 on:
-  workflow_run:
-    workflows: [test]
-    types:
-      - completed
+  push:
+    branches: [master]
+    paths:
+      - 'web/**'
+      - '.github/workflows/web.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'web/**'
+      - '.github/workflows/web.yml'
 
 jobs:
   lint:
@@ -15,14 +21,11 @@ jobs:
       - uses: pnpm/action-setup@v6
         with:
           version: 10
-          cache: true
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-        working-directory: ./web
+          cache: 'pnpm'
+          cache-dependency-path: web/pnpm-lock.yaml
       - name: pnpm install
         run: pnpm install --frozen-lockfile
         working-directory: ./web
