@@ -102,8 +102,7 @@ const searchPageUrl = (): string => {
 const tweetFoundUrl = (route: readonly string[]): string =>
   buildTweetUrl(t('message.tweetFind', { wordFrom: props.wordFrom, wordTo: props.wordTo, length: `${route.length - 1}` }), searchPageUrl());
 
-const tweetNotFoundUrl = (): string =>
-  buildTweetUrl(t('message.tweetNotFound', { wordFrom: props.wordFrom, wordTo: props.wordTo }), searchPageUrl());
+const tweetNotFoundUrl = (): string => buildTweetUrl(t('message.tweetNotFound', { wordFrom: props.wordFrom, wordTo: props.wordTo }), searchPageUrl());
 
 onMounted(search);
 watch(() => [props.wordFrom, props.wordTo], search);
