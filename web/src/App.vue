@@ -1,148 +1,286 @@
 <template>
-  <div id="app">
-    <router-view />
-    <footer>
-      <nav>
-        <router-link to="/">Home</router-link>&nbsp;|
-        <router-link to="/about">About</router-link>
-      </nav>
+  <div class="app">
+    <header class="lib-header">
+      <RouterLink to="/" class="lib-logo">
+        <div class="lib-logo__word">
+          <span class="lib-logo__accent">P</span>edia<span class="lib-logo__accent lib-logo__r">R</span>oute<span class="lib-logo__com">.com</span>
+        </div>
+        <div v-if="isJa" class="lib-logo__sub">ペディアルート</div>
+      </RouterLink>
+      <div class="lib-nav">
+        <span class="lib-nav__est">{{ isJa ? '2013年創設' : 'Est. 2013' }}</span>
+        <span class="lib-nav__dot">·</span>
+        <button :class="['lib-lang', !isJa && 'lib-lang--active']" @click="locale = 'en'">EN</button>
+        <button :class="['lib-lang', 'lib-lang--jp', isJa && 'lib-lang--active']" @click="locale = 'ja'">日本語</button>
+      </div>
+    </header>
+
+    <main>
+      <RouterView />
+    </main>
+
+    <footer class="lib-footer">
+      <div class="lib-footer__nav">
+        <RouterLink to="/">{{ isJa ? 'トップ' : 'Home' }}</RouterLink>
+        <span class="lib-sep"> · </span>
+        <RouterLink to="/about">{{ isJa ? 'このサイトについて' : 'About' }}</RouterLink>
+        <span class="lib-sep"> · </span>
+        <a href="https://github.com/mtgto/pediaroute-go" target="_blank">{{ isJa ? 'ソースコード' : 'Source' }}</a>
+      </div>
+      <span class="lib-footer__credit">Wikipedia · CC BY-SA 3.0</span>
     </footer>
   </div>
 </template>
 
+<script setup lang="ts">
+import { computed, watch } from 'vue';
+import { RouterLink, RouterView } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+
+const { locale } = useI18n();
+const isJa = computed(() => locale.value === 'ja');
+
+watch(
+  locale,
+  (lang) => {
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.className = `lang-${lang}`;
+  },
+  { immediate: true },
+);
+</script>
+
 <style>
-* {
+:root {
+  --c-bg: #f1ead7;
+  --c-paper: #faf5e6;
+  --c-ink: #1c1b18;
+  --c-dim: #6b6557;
+  --c-rule: rgba(28, 27, 24, 0.14);
+  --c-accent: #8a3324;
+  --f-serif: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --f-body: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+  --f-head: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+}
+
+html.lang-ja {
+  --f-body: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --f-head: 'Shippori Mincho B1', 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 body {
-  width: 980px;
-  margin: 0 auto;
-}
-
-div.center {
-  text-align: center;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--f-body);
+  min-height: 100vh;
 }
 
 a {
-  display: inline-block;
-  padding: 0.1em;
-  color: #5fa990;
+  color: var(--c-accent);
+  text-decoration: none;
 }
 
-header {
-  float: left;
-  width: 800px;
+a:hover {
+  text-decoration: underline;
 }
 
-header > h1 {
-  font-size: 24pt;
-}
-
-header > h1 > span {
-  font-size: 1.2em;
-  color: #8fd9c0;
-}
-
-header > p {
-  font-size: 11pt;
-}
-
-article {
-  margin: 10px 0;
-  float: left;
-  width: 800px;
-}
-
-article fieldset {
+button {
+  cursor: pointer;
   border: none;
-}
-
-article button.random {
-  width: 40px;
-  height: 40px;
-  margin: 5px;
-}
-
-article input[type='text'] {
-  margin: 5px 0;
-  width: 400px;
-  height: 44px;
-  font-size: 22pt;
-}
-
-article input.submit {
-  font-size: 1.2em;
-  margin: 15px;
-  width: 200px;
-  height: 40px;
-  border-radius: 5px;
-}
-
-article ol {
-  width: 800px;
-  text-align: center;
-  list-style-position: inside;
-}
-
-aside ul {
-  width: 800px;
-  text-align: center;
-  list-style: none;
-}
-
-article ol li:first-of-type {
-  list-style-type: none;
-}
-
-article ol li {
-  font-size: 18pt;
-  padding-bottom: 32px;
-  background: url(/arrow.png) no-repeat center bottom;
-}
-
-article ol li:last-child {
   background: none;
+  font: inherit;
 }
 
-aside {
-  float: left;
-  width: 800px;
+input,
+textarea {
+  font-family: var(--f-body);
+}
+</style>
+
+<style scoped>
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-section h2,
-aside h2 {
-  font-size: 14pt;
-  margin: 10px 0px;
+/* ---- Header ---- */
+.lib-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--c-rule);
+  padding: 36px 64px 22px;
 }
 
-footer {
-  margin-top: 25px;
-  padding-top: 25px;
-  width: 800px;
-  text-align: center;
-  clear: both;
+.lib-logo {
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
 }
 
-@media screen and (max-width: 480px) {
-  body {
-    width: auto;
-    padding: 20px;
+.lib-logo:hover {
+  text-decoration: none;
+}
+
+.lib-logo__word {
+  font-family: var(--f-serif);
+  font-weight: 700;
+  font-size: 44px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+}
+
+.lib-logo__accent {
+  color: var(--c-accent);
+}
+
+.lib-logo__r {
+  margin-left: 0.06em;
+}
+
+.lib-logo__com {
+  font-family: var(--f-mono);
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--c-dim);
+  margin-left: 10px;
+  letter-spacing: 0.02em;
+}
+
+.lib-logo__sub {
+  font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  font-size: 12px;
+  color: var(--c-dim);
+  margin-top: 6px;
+  letter-spacing: 0.2em;
+}
+
+.lib-nav {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--c-dim);
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.lib-nav__est {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.lib-nav__dot {
+  opacity: 0.4;
+}
+
+.lib-lang {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--c-dim);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+}
+
+.lib-lang--jp {
+  font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+}
+
+.lib-lang--active {
+  font-weight: 600;
+  color: var(--c-ink);
+  border-bottom-color: var(--c-ink);
+}
+
+/* ---- Main ---- */
+main {
+  flex: 1;
+}
+
+/* ---- Footer ---- */
+.lib-footer {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--c-dim);
+  padding: 24px 64px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--c-rule);
+}
+
+.lib-footer__nav {
+  display: flex;
+  align-items: center;
+}
+
+.lib-footer__nav a {
+  color: var(--c-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+}
+
+.lib-footer__nav a:hover {
+  color: var(--c-ink);
+  text-decoration: none;
+}
+
+.lib-sep {
+  opacity: 0.4;
+  padding: 0 4px;
+}
+
+.lib-footer__credit {
+  opacity: 0.7;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 640px) {
+  .lib-header {
+    padding: 20px 18px 14px;
+    align-items: center;
   }
 
-  article input[type='text'] {
-    padding: auto;
-    width: auto;
+  .lib-logo__word {
+    font-size: 22px;
   }
 
-  header,
-  footer,
-  aside,
-  article,
-  article ol,
-  aside ul {
-    width: 100%;
+  .lib-logo__com {
+    font-size: 10px;
+    margin-left: 6px;
+  }
+
+  .lib-logo__sub {
+    display: none;
+  }
+
+  .lib-nav__est,
+  .lib-nav__dot {
+    display: none;
+  }
+
+  .lib-nav {
+    gap: 12px;
+  }
+
+  .lib-footer {
+    padding: 20px 18px;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
   }
 }
 </style>
