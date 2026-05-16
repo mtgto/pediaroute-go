@@ -24,58 +24,52 @@
       </p>
 
       <!-- Catalog card -->
-      <div class="lib-card">
-        <div class="lib-card__header">
-          <span>{{ isJa ? '蔵 書 照 会' : 'Catalog Lookup' }}</span>
-          <span class="lib-card__num">№ 0001</span>
-        </div>
-        <div class="lib-card__body">
-          <!-- From field -->
-          <div class="lib-field-row">
-            <div class="lib-field">
-              <div class="lib-field__label">{{ isJa ? '出 発 点' : 'From' }}</div>
-              <input
-                class="lib-field__input"
-                type="text"
-                :value="wordFrom"
-                :placeholder="isJa ? '記事名を入力' : 'Article title'"
-                @input="onInputFrom"
-                @keydown.ctrl.enter.prevent="search"
-                @keydown.meta.enter.prevent="search"
-              />
-            </div>
-            <button class="lib-random-btn" :title="t('message.buttonRandom')" @click="getRandomFrom">↻ {{ isJa ? 'ランダム' : 'Random' }}</button>
-          </div>
+      <LibCard>
+        <template #header-title>{{ isJa ? '蔵 書 照 会' : 'Catalog Lookup' }}</template>
 
-          <!-- To field -->
-          <div class="lib-field-row">
-            <div class="lib-field">
-              <div class="lib-field__label">{{ isJa ? '到 着 点' : 'To' }}</div>
-              <input
-                class="lib-field__input"
-                type="text"
-                :value="wordTo"
-                :placeholder="isJa ? '記事名を入力' : 'Article title'"
-                @input="onInputTo"
-                @keydown.ctrl.enter.prevent="search"
-                @keydown.meta.enter.prevent="search"
-              />
-            </div>
-            <button class="lib-random-btn" :title="t('message.buttonRandom')" @click="getRandomTo">↻ {{ isJa ? 'ランダム' : 'Random' }}</button>
-          </div>
-
-          <!-- Actions row -->
-          <div class="lib-card__actions">
-            <span class="lib-card__hint">
-              <span class="lib-card__hint-mono">⌘ + Enter</span>
-              {{ isJa ? 'で経路を探す' : 'to trace route' }}
-            </span>
-            <button class="lib-submit" @click="search">
-              {{ isJa ? '経 路 を 探 す →' : 'Trace Route →' }}
-            </button>
-          </div>
+        <!-- From field -->
+        <div class="field-row">
+          <LibField
+            :label="isJa ? '出 発 点' : 'From'"
+            type="text"
+            :value="wordFrom"
+            :placeholder="isJa ? '記事名を入力' : 'Article title'"
+            @input="onInputFrom"
+            @keydown.ctrl.enter.prevent="search"
+            @keydown.meta.enter.prevent="search"
+          />
+          <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomFrom">
+            ↻ {{ isJa ? 'ランダム' : 'Random' }}
+          </button>
         </div>
-      </div>
+
+        <!-- To field -->
+        <div class="field-row">
+          <LibField
+            :label="isJa ? '到 着 点' : 'To'"
+            type="text"
+            :value="wordTo"
+            :placeholder="isJa ? '記事名を入力' : 'Article title'"
+            @input="onInputTo"
+            @keydown.ctrl.enter.prevent="search"
+            @keydown.meta.enter.prevent="search"
+          />
+          <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomTo">
+            ↻ {{ isJa ? 'ランダム' : 'Random' }}
+          </button>
+        </div>
+
+        <!-- Actions row -->
+        <div class="card-actions">
+          <span class="hint">
+            <span class="hint-mono">⌘ + Enter</span>
+            {{ isJa ? 'で経路を探す' : 'to trace route' }}
+          </span>
+          <button class="submit" @click="search">
+            {{ isJa ? '経 路 を 探 す →' : 'Trace Route →' }}
+          </button>
+        </div>
+      </LibCard>
 
       <!-- Stats bar -->
       <div class="home__stats">
@@ -94,6 +88,8 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useMainStore } from '../store';
+import LibCard from '../components/LibCard.vue';
+import LibField from '../components/LibField.vue';
 
 const { t, locale } = useI18n();
 const router = useRouter();
@@ -190,171 +186,83 @@ html.lang-ja .home__subtitle {
   line-height: 1.9;
 }
 
-/* Catalog card */
-.lib-card {
-  background: var(--c-paper);
-  border: 1px solid var(--c-rule);
-  border-radius: 2px;
-  box-shadow:
-    0 1px 0 rgba(28, 27, 24, 0.04),
-    0 12px 24px -18px rgba(28, 27, 24, 0.18);
-}
-
-.lib-card__header {
-  padding: 14px 24px 10px;
-  border-bottom: 1px solid var(--c-rule);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: var(--f-mono);
-  font-size: 10px;
-  color: var(--c-dim);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-html.lang-ja .lib-card__header {
-  font-family: var(--f-body);
-  font-size: 11px;
-  letter-spacing: 0.24em;
-  text-transform: none;
-}
-
-.lib-card__num {
-  font-family: var(--f-mono);
-  letter-spacing: 0.14em;
-}
-
-.lib-card__body {
-  padding: 28px 36px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-/* Field row (input + random btn) */
-.lib-field-row {
+/* Field row (LibField + random button) */
+.field-row {
   display: flex;
   align-items: flex-end;
   gap: 12px;
 }
 
-.lib-field {
-  flex: 1;
-  border-bottom: 1px solid var(--c-ink);
-  padding-bottom: 8px;
-}
-
-.lib-field__label {
-  font-family: var(--f-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--c-dim);
-  margin-bottom: 6px;
-}
-
-html.lang-ja .lib-field__label {
-  font-family: var(--f-body);
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  text-transform: none;
-}
-
-.lib-field__input {
-  width: 100%;
-  border: none;
-  background: none;
-  font-family: var(--f-head);
-  font-size: 26px;
-  color: var(--c-ink);
-  line-height: 1.1;
-  outline: none;
-  padding: 0;
-}
-
-.lib-field__input::placeholder {
-  color: var(--c-dim);
-  font-style: italic;
-}
-
-html.lang-ja .lib-field__input {
-  font-size: 24px;
-  font-weight: 500;
-}
-
-.lib-random-btn {
+/* Random button */
+.random-btn {
   all: unset;
   cursor: pointer;
   padding: 6px 10px;
   border: 1px solid var(--c-rule);
   border-radius: 2px;
-  font-family: var(--f-mono);
+  font-family: var(--ui-font);
   font-size: 10px;
   letter-spacing: 0.16em;
-  text-transform: uppercase;
+  text-transform: var(--ui-tt);
   color: var(--c-dim);
   background: var(--c-bg);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-html.lang-ja .lib-random-btn {
-  font-family: var(--f-body);
+html.lang-ja .random-btn {
   font-size: 11px;
   letter-spacing: 0.2em;
-  text-transform: none;
 }
 
-.lib-random-btn:hover {
+.random-btn:hover {
   color: var(--c-ink);
   border-color: var(--c-ink);
 }
 
-/* Actions row */
-.lib-card__actions {
+/* Actions row inside card */
+.card-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-top: 8px;
 }
 
-.lib-card__hint {
+/* Keyboard shortcut hint */
+.hint {
   font-family: var(--f-body);
   font-size: 11px;
   color: var(--c-dim);
 }
 
-html.lang-ja .lib-card__hint {
-  font-family: var(--f-body);
+html.lang-ja .hint {
   font-size: 12px;
 }
 
-.lib-card__hint-mono {
+.hint-mono {
   font-family: var(--f-mono);
 }
 
-.lib-submit {
+/* Submit button */
+.submit {
   all: unset;
   cursor: pointer;
   padding: 14px 28px;
   background: var(--c-ink);
   color: var(--c-paper);
-  font-family: var(--f-mono);
+  font-family: var(--cta-font);
   font-size: 12px;
   letter-spacing: 0.22em;
-  text-transform: uppercase;
+  text-transform: var(--ui-tt);
   font-weight: 500;
 }
 
-html.lang-ja .lib-submit {
-  font-family: var(--f-head);
+html.lang-ja .submit {
   font-size: 14px;
   letter-spacing: 0.32em;
-  text-transform: none;
 }
 
-.lib-submit:hover {
+.submit:hover {
   background: var(--c-accent);
 }
 
@@ -397,28 +305,15 @@ html.lang-ja .home__stats {
     margin-bottom: 28px;
   }
 
-  .lib-card__body {
-    padding: 18px 18px 20px;
-    gap: 18px;
-  }
-
-  .lib-card__actions {
+  .card-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
 
-  .lib-submit {
+  .submit {
     text-align: center;
     width: 100%;
-  }
-
-  .lib-card__header {
-    padding: 12px 18px 10px;
-  }
-
-  .lib-field__input {
-    font-size: 20px;
   }
 }
 </style>

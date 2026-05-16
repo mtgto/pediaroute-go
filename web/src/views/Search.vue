@@ -32,15 +32,12 @@
             </div>
           </div>
 
-          <!-- Stamp -->
-          <div v-if="errorCode === ErrorCode.NoError" class="lib-stamp lib-stamp--found">
-            <div class="lib-stamp__word">{{ isJa ? '発 見' : 'FOUND' }}</div>
-            <div class="lib-stamp__meta">{{ (time / 1000).toFixed(3) }} sec · {{ (routes?.length ?? 1) - 1 }} hops</div>
-          </div>
-          <div v-else class="lib-stamp lib-stamp--notfound">
-            <div class="lib-stamp__word">{{ isJa ? '未 到 達' : 'NO ROUTE' }}</div>
-            <div class="lib-stamp__meta">{{ (time / 1000).toFixed(3) }} sec</div>
-          </div>
+          <LibStamp
+            :found="errorCode === ErrorCode.NoError"
+            :meta="errorCode === ErrorCode.NoError
+              ? `${(time / 1000).toFixed(3)} sec · ${(routes?.length ?? 1) - 1} hops`
+              : `${(time / 1000).toFixed(3)} sec`"
+          />
         </div>
 
         <!-- Route found: stacked catalog slips -->
@@ -67,48 +64,41 @@
             </template>
           </div>
 
-          <!-- Actions for found state -->
           <div class="search__actions">
-            <RouterLink class="lib-btn lib-btn--primary" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
+            <LibBtn :as="RouterLink" variant="primary" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
               {{ isJa ? '← 逆 経 路' : '← Reverse Route' }}
-            </RouterLink>
-            <RouterLink class="lib-btn lib-btn--outline" to="/">
+            </LibBtn>
+            <LibBtn :as="RouterLink" variant="outline" to="/">
               {{ isJa ? '新しく探す' : 'New Search' }}
-            </RouterLink>
-            <a class="lib-btn lib-btn--ghost" :href="tweetFoundUrl(routes)" target="_blank" rel="noopener">
+            </LibBtn>
+            <LibBtn as="a" variant="ghost" :href="tweetFoundUrl(routes)" target="_blank" rel="noopener">
               {{ t('message.tweet') }}
-            </a>
+            </LibBtn>
           </div>
         </template>
 
         <!-- Article not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundFrom || errorCode === ErrorCode.NotFoundTo">
-          <div class="lib-notice">
-            <div class="lib-notice__header">
-              <span>{{ isJa ? '蔵 書 通 知' : 'Catalog Notice' }}</span>
-              <span class="lib-notice__num">№ 0001 · v</span>
-            </div>
-            <p class="lib-notice__body">{{ failureReason }}</p>
-          </div>
+          <LibNotice>
+            <template #header-title>{{ isJa ? '蔵 書 通 知' : 'Catalog Notice' }}</template>
+            <template #body>{{ failureReason }}</template>
+          </LibNotice>
           <div class="search__actions">
-            <RouterLink class="lib-btn lib-btn--primary" to="/">
+            <LibBtn :as="RouterLink" variant="primary" to="/">
               {{ isJa ? '← 新しく探す' : '← New Search' }}
-            </RouterLink>
+            </LibBtn>
           </div>
         </template>
 
         <!-- Route not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundRoute">
-          <div class="lib-notice">
-            <div class="lib-notice__header">
-              <span>{{ isJa ? '蔵 書 通 知' : 'Catalog Notice' }}</span>
-              <span class="lib-notice__num">№ 0001 · v</span>
-            </div>
-            <p class="lib-notice__body lib-notice__body--large">
-              <template v-if="isJa"> この二つの記事を<em class="lib-notice__em">６リンク以内</em>で結ぶ経路は見つかりませんでした。 </template>
-              <template v-else> No chain of <em class="lib-notice__em">six links or fewer</em> connects these two articles. </template>
-            </p>
-            <p class="lib-notice__note">
+          <LibNotice :body-large="true">
+            <template #header-title>{{ isJa ? '蔵 書 通 知' : 'Catalog Notice' }}</template>
+            <template #body>
+              <template v-if="isJa"> この二つの記事を<em class="notice-em">６リンク以内</em>で結ぶ経路は見つかりませんでした。 </template>
+              <template v-else> No chain of <em class="notice-em">six links or fewer</em> connects these two articles. </template>
+            </template>
+            <template #note>
               <template v-if="isJa">
                 記事名の表記揺れか、もしくは到着点が他から孤立した記事である可能性があります。PediaRoute は信念をもって探索を６歩までに留めています —
                 それ以上長い経路は、百科事典を当てもなくさまようことになるため。
@@ -117,18 +107,18 @@
                 This usually means one of the titles is misspelled, or the goal article is a very isolated entry. PediaRoute caps the search at 6 hops
                 on principle — longer chains tend to wander aimlessly across the encyclopedia.
               </template>
-            </p>
-          </div>
+            </template>
+          </LibNotice>
           <div class="search__actions">
-            <RouterLink class="lib-btn lib-btn--primary" to="/">
+            <LibBtn :as="RouterLink" variant="primary" to="/">
               {{ isJa ? '← 新しく探す' : '← New Search' }}
-            </RouterLink>
-            <RouterLink class="lib-btn lib-btn--outline" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
+            </LibBtn>
+            <LibBtn :as="RouterLink" variant="outline" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
               {{ isJa ? '逆方向を試す' : '↻ Try reverse' }}
-            </RouterLink>
-            <a class="lib-btn lib-btn--ghost" :href="tweetNotFoundUrl()" target="_blank" rel="noopener">
+            </LibBtn>
+            <LibBtn as="a" variant="ghost" :href="tweetNotFoundUrl()" target="_blank" rel="noopener">
               {{ t('message.tweet') }}
-            </a>
+            </LibBtn>
           </div>
         </template>
       </template>
@@ -140,6 +130,9 @@
 import { computed, ref, onMounted, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import LibBtn from '../components/LibBtn.vue';
+import LibNotice from '../components/LibNotice.vue';
+import LibStamp from '../components/LibStamp.vue';
 
 const props = defineProps<{
   wordFrom: string;
@@ -309,55 +302,6 @@ html.lang-ja .search__result-label {
   font-style: normal;
 }
 
-/* Stamp */
-.lib-stamp {
-  border: 1.5px solid var(--c-accent);
-  padding: 8px 14px;
-  color: var(--c-accent);
-  font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  border-radius: 3px;
-  background: rgba(138, 51, 36, 0.04);
-  text-align: center;
-  flex-shrink: 0;
-}
-
-html.lang-ja .lib-stamp {
-  font-family: var(--f-head);
-  font-size: 14px;
-  letter-spacing: 0.4em;
-  text-transform: none;
-}
-
-.lib-stamp--found {
-  transform: rotate(-2deg);
-}
-
-.lib-stamp--notfound {
-  transform: rotate(-3deg);
-}
-
-.lib-stamp__word {
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.16em;
-}
-
-html.lang-ja .lib-stamp__word {
-  font-size: 14px;
-  letter-spacing: 0.5em;
-}
-
-.lib-stamp__meta {
-  font-size: 9px;
-  opacity: 0.8;
-  margin-top: 1px;
-  font-family: var(--f-mono);
-  letter-spacing: 0.08em;
-}
-
 /* Route list */
 .route-list {
   display: flex;
@@ -449,80 +393,6 @@ html.lang-ja .route-slip__step {
   font-size: 12px;
 }
 
-/* Catalog notice */
-.lib-notice {
-  background: var(--c-paper);
-  border: 1px solid var(--c-rule);
-  padding: 28px 36px;
-  border-radius: 2px;
-  margin-bottom: 36px;
-  box-shadow:
-    0 1px 0 rgba(28, 27, 24, 0.04),
-    0 12px 24px -18px rgba(28, 27, 24, 0.18);
-}
-
-.lib-notice__header {
-  font-family: var(--f-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--c-dim);
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--c-rule);
-}
-
-html.lang-ja .lib-notice__header {
-  font-family: var(--f-body);
-  font-size: 11px;
-  letter-spacing: 0.32em;
-  text-transform: none;
-}
-
-.lib-notice__num {
-  font-family: var(--f-mono);
-  letter-spacing: 0.12em;
-}
-
-.lib-notice__body {
-  font-family: var(--f-body);
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--c-ink);
-}
-
-.lib-notice__body--large {
-  font-size: 21px;
-  line-height: 1.45;
-  margin-bottom: 18px;
-}
-
-html.lang-ja .lib-notice__body--large {
-  font-family: var(--f-head);
-  font-size: 22px;
-  line-height: 1.7;
-  font-weight: 500;
-}
-
-.lib-notice__em {
-  color: var(--c-accent);
-}
-
-.lib-notice__note {
-  font-family: var(--f-body);
-  font-size: 16px;
-  line-height: 1.65;
-  color: var(--c-dim);
-  max-width: 640px;
-}
-
-html.lang-ja .lib-notice__note {
-  font-size: 14px;
-  line-height: 1.9;
-}
-
 /* Actions */
 .search__actions {
   margin-top: 36px;
@@ -531,54 +401,9 @@ html.lang-ja .lib-notice__note {
   flex-wrap: wrap;
 }
 
-.lib-btn {
-  display: inline-block;
-  padding: 12px 20px;
-  font-family: var(--f-mono);
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-html.lang-ja .lib-btn {
-  font-family: var(--f-head);
-  font-size: 13px;
-  letter-spacing: 0.32em;
-  text-transform: none;
-}
-
-.lib-btn--primary {
-  background: var(--c-ink);
-  color: var(--c-paper);
-}
-
-.lib-btn--primary:hover {
-  background: var(--c-accent);
-  text-decoration: none;
-  color: var(--c-paper);
-}
-
-.lib-btn--outline {
-  border: 1px solid var(--c-ink);
-  color: var(--c-ink);
-}
-
-.lib-btn--outline:hover {
-  border-color: var(--c-accent);
+/* Accent emphasis inside notice body slot */
+.notice-em {
   color: var(--c-accent);
-  text-decoration: none;
-}
-
-.lib-btn--ghost {
-  color: var(--c-dim);
-  border-bottom: 1px solid var(--c-rule);
-}
-
-.lib-btn--ghost:hover {
-  color: var(--c-ink);
-  text-decoration: none;
 }
 
 /* Mobile */
@@ -614,16 +439,8 @@ html.lang-ja .lib-btn {
     font-size: 22px;
   }
 
-  .lib-notice {
-    padding: 20px 18px;
-  }
-
   .search__actions {
     flex-direction: column;
-  }
-
-  .lib-btn {
-    text-align: center;
   }
 }
 </style>

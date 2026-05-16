@@ -1,0 +1,25 @@
+:root {
+  --c-bg: #f1ead7;
+  --c-paper: #faf5e6;
+  --c-ink: #1c1b18;
+  --c-dim: #6b6557;
+  --c-rule: rgba(28, 27, 24, 0.14);
+  --c-accent: #8a3324;
+  --f-serif: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --f-body: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+  --f-head: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+
+  /* Semantic tokens for multilingual typography */
+  --ui-font: var(--f-mono);  /* UI labels: mono in EN, body in JA */
+  --cta-font: var(--f-mono); /* CTA buttons: mono in EN, head in JA */
+  --ui-tt: uppercase;        /* text-transform: none in JA */
+}
+
+html.lang-ja {
+  --f-body: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --f-head: 'Shippori Mincho B1', 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  --ui-font: var(--f-body);
+  --cta-font: var(--f-head);
+  --ui-tt: none;
+}

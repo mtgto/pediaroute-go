@@ -50,62 +50,6 @@ watch(
 );
 </script>
 
-<style>
-:root {
-  --c-bg: #f1ead7;
-  --c-paper: #faf5e6;
-  --c-ink: #1c1b18;
-  --c-dim: #6b6557;
-  --c-rule: rgba(28, 27, 24, 0.14);
-  --c-accent: #8a3324;
-  --f-serif: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
-  --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --f-body: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
-  --f-head: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
-}
-
-html.lang-ja {
-  --f-body: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  --f-head: 'Shippori Mincho B1', 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background: var(--c-bg);
-  color: var(--c-ink);
-  font-family: var(--f-body);
-  min-height: 100vh;
-}
-
-a {
-  color: var(--c-accent);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font: inherit;
-}
-
-input,
-textarea {
-  font-family: var(--f-body);
-}
-</style>
-
 <style scoped>
 .app {
   display: flex;
