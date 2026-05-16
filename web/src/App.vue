@@ -26,7 +26,6 @@
         <span class="lib-sep"> · </span>
         <a href="https://github.com/mtgto/pediaroute-go" target="_blank">{{ t('nav.source') }}</a>
       </div>
-      <span class="lib-footer__credit">Wikipedia · CC BY-SA 3.0</span>
     </footer>
   </div>
 </template>
@@ -184,10 +183,6 @@ main {
 .lib-sep {
   opacity: 0.4;
   padding: 0 4px;
-}
-
-.lib-footer__credit {
-  opacity: 0.7;
 }
 
 /* ---- Mobile ---- */

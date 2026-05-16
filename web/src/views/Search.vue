@@ -34,9 +34,11 @@
 
           <Stamp
             :found="errorCode === ErrorCode.NoError"
-            :meta="errorCode === ErrorCode.NoError
-              ? `${(time / 1000).toFixed(3)} sec · ${(routes?.length ?? 1) - 1} hops`
-              : `${(time / 1000).toFixed(3)} sec`"
+            :meta="
+              errorCode === ErrorCode.NoError
+                ? `${(time / 1000).toFixed(3)} sec · ${(routes?.length ?? 1) - 1} hops`
+                : `${(time / 1000).toFixed(3)} sec`
+            "
           />
         </div>
 
@@ -50,7 +52,9 @@
                   <template v-else-if="i === (routes?.length ?? 1) - 1">{{ t('search.destination') }}</template>
                   <template v-else>
                     <i18n-t keypath="search.step">
-                      <template #num><span class="route-slip__step-n">{{ i }}</span></template>
+                      <template #num
+                        ><span class="route-slip__step-n">{{ i }}</span></template
+                      >
                     </i18n-t>
                   </template>
                 </div>
@@ -95,7 +99,9 @@
             <template #header-title>{{ t('search.noticeTitle') }}</template>
             <template #body>
               <i18n-t keypath="search.notFoundBody">
-                <template #em><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template>
+                <template #em
+                  ><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template
+                >
               </i18n-t>
             </template>
             <template #note>{{ t('search.notFoundNote') }}</template>
@@ -152,7 +158,7 @@ const errorCode = ref<ErrorCodeType>(ErrorCode.NoError);
 const time = ref(0);
 
 const buildTweetUrl = (text: string, url: string): string => {
-  const tweetUrl = new URL('https://twitter.com/intent/tweet');
+  const tweetUrl = new URL('https://x.com/intent/post');
   tweetUrl.searchParams.append('text', text);
   tweetUrl.searchParams.append('url', url);
   tweetUrl.searchParams.append('hashtags', 'pediaroute');
