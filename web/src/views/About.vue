@@ -1,15 +1,9 @@
 <template>
   <div class="about">
     <div class="about__inner">
-      <p class="about__colophon">{{ isJa ? '奥 付' : 'Colophon' }}</p>
-      <h1 class="about__heading">{{ isJa ? 'このサイトについて' : 'About PediaRoute.' }}</h1>
-      <p class="about__lead">
-        {{
-          isJa
-            ? '13年のあいだ、静かにウィキペディアを辿りつづける小さなプロジェクト。'
-            : 'A small project that has quietly traced Wikipedia for thirteen years.'
-        }}
-      </p>
+      <p class="about__colophon">{{ t('about.colophon') }}</p>
+      <h1 class="about__heading">{{ t('about.heading') }}</h1>
+      <p class="about__lead">{{ t('about.lead') }}</p>
 
       <div class="about__sections">
         <!-- Section 01: Route finding -->
@@ -57,11 +51,12 @@
           </div>
           <div class="about__section-body">
             <p>
-              {{ isJa ? '2013年より、' : 'Designed, built, and maintained since 2013 by ' }}<a href="https://twitter.com/mtgto">@mtgto</a
-              >{{ isJa ? 'が設計・開発・運用しています。' : '.' }}
+              <i18n-t keypath="about.authorBio">
+                <template #handle><a href="https://twitter.com/mtgto">@mtgto</a></template>
+              </i18n-t>
             </p>
             <p class="about__meta">
-              <a href="https://github.com/mtgto/pediaroute-go">{{ isJa ? 'ソースコード' : 'Source code' }}</a>
+              <a href="https://github.com/mtgto/pediaroute-go">{{ t('about.sourceCode') }}</a>
             </p>
           </div>
         </div>
@@ -71,11 +66,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const { t, locale } = useI18n();
-const isJa = computed(() => locale.value === 'ja');
+const { t } = useI18n();
 </script>
 
 <style scoped>

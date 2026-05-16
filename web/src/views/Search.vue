@@ -4,7 +4,7 @@
       <!-- Loading -->
       <div v-if="isLoading" class="search__loading">
         <div class="search__loading-label">
-          {{ isJa ? '経路を探しています...' : 'Tracing route…' }}
+          {{ t('search.loading') }}
         </div>
         <div class="search__loading-pair">
           <em>{{ wordFrom }}</em>
@@ -19,10 +19,10 @@
           <div>
             <div class="search__result-label">
               <template v-if="errorCode === ErrorCode.NoError">
-                {{ isJa ? '蔵書照会 ・ 経路あり' : 'Catalog Entry · Route Found' }}
+                {{ t('search.routeFound') }}
               </template>
               <template v-else>
-                {{ isJa ? '蔵書照会 ・ 経路なし' : 'Catalog Entry · No Route' }}
+                {{ t('search.noRoute') }}
               </template>
             </div>
             <div class="search__result-pair">
@@ -46,13 +46,12 @@
             <template v-for="(word, i) in routes" :key="word">
               <div :class="['route-slip', i === 0 || i === (routes?.length ?? 1) - 1 ? 'route-slip--endpoint' : '']">
                 <div class="route-slip__step">
-                  <template v-if="i === 0">{{ isJa ? '出 発 点' : 'Origin' }}</template>
-                  <template v-else-if="i === (routes?.length ?? 1) - 1">{{ isJa ? '到 着 点' : 'Destination' }}</template>
+                  <template v-if="i === 0">{{ t('search.origin') }}</template>
+                  <template v-else-if="i === (routes?.length ?? 1) - 1">{{ t('search.destination') }}</template>
                   <template v-else>
-                    <template v-if="isJa"
-                      >第 <span class="route-slip__step-n">{{ i }}</span> 歩</template
-                    >
-                    <template v-else>Step {{ String(i).padStart(2, '0') }}</template>
+                    <i18n-t keypath="search.step">
+                      <template #num><span class="route-slip__step-n">{{ i }}</span></template>
+                    </i18n-t>
                   </template>
                 </div>
                 <div class="route-slip__title">
@@ -66,10 +65,10 @@
 
           <div class="search__actions">
             <LibBtn :as="RouterLink" variant="primary" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
-              {{ isJa ? '← 逆 経 路' : '← Reverse Route' }}
+              {{ t('search.reverseRoute') }}
             </LibBtn>
             <LibBtn :as="RouterLink" variant="outline" to="/">
-              {{ isJa ? '新しく探す' : 'New Search' }}
+              {{ t('search.newSearch') }}
             </LibBtn>
             <LibBtn as="a" variant="ghost" :href="tweetFoundUrl(routes)" target="_blank" rel="noopener">
               {{ t('message.tweet') }}
@@ -80,12 +79,12 @@
         <!-- Article not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundFrom || errorCode === ErrorCode.NotFoundTo">
           <LibNotice>
-            <template #header-title>{{ isJa ? '蔵 書 通 知' : 'Catalog Notice' }}</template>
+            <template #header-title>{{ t('search.noticeTitle') }}</template>
             <template #body>{{ failureReason }}</template>
           </LibNotice>
           <div class="search__actions">
             <LibBtn :as="RouterLink" variant="primary" to="/">
-              {{ isJa ? '← 新しく探す' : '← New Search' }}
+              {{ t('search.newSearchBack') }}
             </LibBtn>
           </div>
         </template>
@@ -93,28 +92,20 @@
         <!-- Route not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundRoute">
           <LibNotice :body-large="true">
-            <template #header-title>{{ isJa ? '蔵 書 通 知' : 'Catalog Notice' }}</template>
+            <template #header-title>{{ t('search.noticeTitle') }}</template>
             <template #body>
-              <template v-if="isJa"> この二つの記事を<em class="notice-em">６リンク以内</em>で結ぶ経路は見つかりませんでした。 </template>
-              <template v-else> No chain of <em class="notice-em">six links or fewer</em> connects these two articles. </template>
+              <i18n-t keypath="search.notFoundBody">
+                <template #em><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template>
+              </i18n-t>
             </template>
-            <template #note>
-              <template v-if="isJa">
-                記事名の表記揺れか、もしくは到着点が他から孤立した記事である可能性があります。PediaRoute は信念をもって探索を６歩までに留めています —
-                それ以上長い経路は、百科事典を当てもなくさまようことになるため。
-              </template>
-              <template v-else>
-                This usually means one of the titles is misspelled, or the goal article is a very isolated entry. PediaRoute caps the search at 6 hops
-                on principle — longer chains tend to wander aimlessly across the encyclopedia.
-              </template>
-            </template>
+            <template #note>{{ t('search.notFoundNote') }}</template>
           </LibNotice>
           <div class="search__actions">
             <LibBtn :as="RouterLink" variant="primary" to="/">
-              {{ isJa ? '← 新しく探す' : '← New Search' }}
+              {{ t('search.newSearchBack') }}
             </LibBtn>
             <LibBtn :as="RouterLink" variant="outline" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
-              {{ isJa ? '逆方向を試す' : '↻ Try reverse' }}
+              {{ t('search.tryReverse') }}
             </LibBtn>
             <LibBtn as="a" variant="ghost" :href="tweetNotFoundUrl()" target="_blank" rel="noopener">
               {{ t('message.tweet') }}
@@ -127,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import LibBtn from '../components/LibBtn.vue';
@@ -153,7 +144,6 @@ interface Result {
 }
 
 const { t, locale } = useI18n();
-const isJa = computed(() => locale.value === 'ja');
 
 const isLoading = ref(true);
 const routes = ref<readonly string[] | undefined>(undefined);

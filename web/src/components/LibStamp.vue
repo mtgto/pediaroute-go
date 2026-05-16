@@ -1,14 +1,13 @@
 <template>
   <div :class="['stamp', found ? 'stamp--found' : 'stamp--notfound']">
     <div class="stamp__word">
-      {{ found ? (isJa ? '発 見' : 'FOUND') : (isJa ? '未 到 達' : 'NO ROUTE') }}
+      {{ found ? t('stamp.found') : t('stamp.notFound') }}
     </div>
     <div class="stamp__meta">{{ meta }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 defineProps<{
@@ -16,8 +15,7 @@ defineProps<{
   meta: string;
 }>();
 
-const { locale } = useI18n();
-const isJa = computed(() => locale.value === 'ja');
+const { t } = useI18n();
 </script>
 
 <style scoped>

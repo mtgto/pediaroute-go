@@ -8,7 +8,7 @@
         <div v-if="isJa" class="lib-logo__sub">ペディアルート</div>
       </RouterLink>
       <div class="lib-nav">
-        <span class="lib-nav__est">{{ isJa ? '2013年創設' : 'Est. 2013' }}</span>
+        <span class="lib-nav__est">{{ t('nav.est') }}</span>
         <span class="lib-nav__dot">·</span>
         <button :class="['lib-lang', !isJa && 'lib-lang--active']" @click="locale = 'en'">EN</button>
         <button :class="['lib-lang', 'lib-lang--jp', isJa && 'lib-lang--active']" @click="locale = 'ja'">日本語</button>
@@ -21,11 +21,11 @@
 
     <footer class="lib-footer">
       <div class="lib-footer__nav">
-        <RouterLink to="/">{{ isJa ? 'トップ' : 'Home' }}</RouterLink>
+        <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
         <span class="lib-sep"> · </span>
-        <RouterLink to="/about">{{ isJa ? 'このサイトについて' : 'About' }}</RouterLink>
+        <RouterLink to="/about">{{ t('nav.about') }}</RouterLink>
         <span class="lib-sep"> · </span>
-        <a href="https://github.com/mtgto/pediaroute-go" target="_blank">{{ isJa ? 'ソースコード' : 'Source' }}</a>
+        <a href="https://github.com/mtgto/pediaroute-go" target="_blank">{{ t('nav.source') }}</a>
       </div>
       <span class="lib-footer__credit">Wikipedia · CC BY-SA 3.0</span>
     </footer>
@@ -37,7 +37,7 @@ import { computed, watch } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
-const { locale } = useI18n();
+const { t, locale } = useI18n();
 const isJa = computed(() => locale.value === 'ja');
 
 watch(

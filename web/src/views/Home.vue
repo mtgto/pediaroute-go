@@ -1,83 +1,69 @@
 <template>
   <div class="home">
     <div class="home__inner">
-      <p class="home__tagline">
-        {{ isJa ? 'ウィキペディア経路探索 ・ 2013年から' : 'The Wikipedia Route Finder · Since 2013' }}
-      </p>
+      <p class="home__tagline">{{ t('home.tagline') }}</p>
 
-      <h1 class="home__hero">
-        <template v-if="isJa">
-          ウィキペディアの二つの記事を、<br />
-          <em class="home__hero-em">６つのリンクで</em>結ぶ。
-        </template>
-        <template v-else>
-          Find a route between any two<br />
-          Wikipedia pages, in <em class="home__hero-em">6 links or fewer.</em>
-        </template>
-      </h1>
+      <i18n-t keypath="home.hero" tag="h1" class="home__hero">
+        <template #break><br /></template>
+        <template #em><em class="home__hero-em">{{ t('home.heroEm') }}</em></template>
+      </i18n-t>
 
-      <p class="home__subtitle">
-        <template v-if="isJa">
-          ２つの記事名を入力してください。またはサイコロを振って任意の記事を選んでも構いません。記事から記事へ、ハイパーリンクの最短経路をたどります。
-        </template>
-        <template v-else> Type two article titles below — or roll the dice. We'll trace the shortest chain of hyperlinks between them. </template>
-      </p>
+      <p class="home__subtitle">{{ t('home.subtitle') }}</p>
 
       <!-- Catalog card -->
       <LibCard>
-        <template #header-title>{{ isJa ? '蔵 書 照 会' : 'Catalog Lookup' }}</template>
+        <template #header-title>{{ t('home.catalogTitle') }}</template>
 
         <!-- From field -->
         <div class="field-row">
           <LibField
-            :label="isJa ? '出 発 点' : 'From'"
+            :label="t('home.fieldFrom')"
             type="text"
             :value="wordFrom"
-            :placeholder="isJa ? '記事名を入力' : 'Article title'"
+            :placeholder="t('home.placeholder')"
             @input="onInputFrom"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
           />
           <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomFrom">
-            ↻ {{ isJa ? 'ランダム' : 'Random' }}
+            ↻ {{ t('home.random') }}
           </button>
         </div>
 
         <!-- To field -->
         <div class="field-row">
           <LibField
-            :label="isJa ? '到 着 点' : 'To'"
+            :label="t('home.fieldTo')"
             type="text"
             :value="wordTo"
-            :placeholder="isJa ? '記事名を入力' : 'Article title'"
+            :placeholder="t('home.placeholder')"
             @input="onInputTo"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
           />
           <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomTo">
-            ↻ {{ isJa ? 'ランダム' : 'Random' }}
+            ↻ {{ t('home.random') }}
           </button>
         </div>
 
         <!-- Actions row -->
         <div class="card-actions">
-          <span class="hint">
-            <span class="hint-mono">⌘ + Enter</span>
-            {{ isJa ? 'で経路を探す' : 'to trace route' }}
-          </span>
+          <i18n-t keypath="home.ctaHint" tag="span" class="hint">
+            <template #key><span class="hint-mono">⌘ + Enter</span></template>
+          </i18n-t>
           <button class="submit" @click="search">
-            {{ isJa ? '経 路 を 探 す →' : 'Trace Route →' }}
+            {{ t('home.cta') }}
           </button>
         </div>
       </LibCard>
 
       <!-- Stats bar -->
       <div class="home__stats">
-        <span><template v-if="isJa">収録</template><template v-else>Index:</template> 6,847,221 articles</span>
+        <span>{{ t('home.statsIndex') }} 6,847,221 articles</span>
         <span class="home__stats-dot">·</span>
-        <span><template v-if="isJa">平均</template><template v-else>Avg. trace:</template> 87 ms</span>
+        <span>{{ t('home.statsAvg') }} 87 ms</span>
         <span class="home__stats-dot">·</span>
-        <span><template v-if="isJa">最大</template><template v-else>Max hops:</template> 6</span>
+        <span>{{ t('home.statsMax') }} 6</span>
       </div>
     </div>
   </div>
@@ -94,8 +80,6 @@ import LibField from '../components/LibField.vue';
 const { t, locale } = useI18n();
 const router = useRouter();
 const store = useMainStore();
-
-const isJa = computed(() => locale.value === 'ja');
 const wordFrom = computed(() => store.wordFrom);
 const wordTo = computed(() => store.wordTo);
 
