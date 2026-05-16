@@ -48,6 +48,7 @@ func main() {
 		englishConfigFile = &configFile
 	}
 
+	languagesMeta := make(map[string]*core.Language)
 	for lang, langFile := range map[string]string{"ja": *japaneseConfigFile, "en": *englishConfigFile} {
 		language, err := core.LoadLanguage(langFile)
 		if err != nil {
@@ -62,6 +63,7 @@ func main() {
 			log.Printf("Failed to load for lang %v: %v", lang, err)
 		} else {
 			wikipedias[lang] = wikipedia
+			languagesMeta[lang] = language
 		}
 		log.Printf("Loaded for language %v\n", lang)
 	}
@@ -77,6 +79,29 @@ func main() {
 	http.Handle("/", fileServer)
 	http.Handle("/about", http.StripPrefix("/about", fileServer))
 	http.Handle("/search", http.StripPrefix("/search", fileServer))
+
+	type LanguageInfo struct {
+		PageCount uint32 `json:"page_count"`
+		LinkCount uint64 `json:"link_count"`
+		Version   string `json:"version"`
+	}
+
+	http.HandleFunc("/api/info", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Not Found", http.StatusNotFound)
+			return
+		}
+		result := make(map[string]LanguageInfo)
+		for lang, meta := range languagesMeta {
+			result[lang] = LanguageInfo{
+				PageCount: meta.PageCount,
+				LinkCount: meta.LinkCount,
+				Version:   meta.Version,
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(result)
+	})
 
 	type Pair struct {
 		From string `json:"from"`

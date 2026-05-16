@@ -35,14 +35,38 @@
         </p>
       </div>
     </article>
+    <footer v-if="currentStats">
+      <p>
+        {{ locale === 'ja' ? '収録' : 'Index:' }} {{ currentStats.page_count.toLocaleString() }} {{ locale === 'ja' ? '記事' : 'articles' }} ·
+        {{ locale === 'ja' ? 'リンク数' : 'Links:' }} {{ currentStats.link_count.toLocaleString() }} · {{ locale === 'ja' ? '版' : 'Version:' }}
+        {{ currentStats.version || '...' }}
+      </p>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useMainStore } from '../store';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+
+interface LangInfo {
+  page_count: number;
+  link_count: number;
+  version: string;
+}
+
+const langInfoMap = ref<Record<string, LangInfo>>({});
+
+onMounted(async () => {
+  await fetch('/api/info')
+    .then((r) => r.json())
+    .then((data: Record<string, LangInfo>) => {
+      langInfoMap.value = data;
+    })
+    .catch(console.error);
+});
 
 const state = useMainStore();
 const { t, locale } = useI18n();
@@ -50,6 +74,7 @@ const router = useRouter();
 
 const wordFrom = computed(() => state.wordFrom);
 const wordTo = computed(() => state.wordTo);
+const currentStats = computed(() => langInfoMap.value[locale.value]);
 
 const chooseEnglish = () => {
   locale.value = 'en';

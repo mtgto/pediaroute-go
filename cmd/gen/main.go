@@ -16,6 +16,7 @@ func main() {
 		pageLinkFile      = flag.String("il", "", "File path of pagelinks.sql.gz")
 		linktargetSQLFile = flag.String("ilt", "", "File path of linktarget.sql.gz (new MediaWiki format)")
 		outDir            = flag.String("o", "", "Output directory")
+		version           = flag.String("version", "", "Version of Wikipedia dump (YYYYMMDD format, e.g. 20250101)")
 	)
 	flag.Parse()
 	if fileMode, err := os.Stat(*pageFile); err != nil || !fileMode.Mode().IsRegular() {
@@ -40,5 +41,5 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	gen.Run(*language, *pageFile, *pageLinkFile, *linktargetSQLFile, *outDir)
+	gen.Run(*language, *pageFile, *pageLinkFile, *linktargetSQLFile, *outDir, *version)
 }

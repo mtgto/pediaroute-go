@@ -155,7 +155,7 @@ func TestRun(t *testing.T) {
 		"INSERT INTO `pagelinks` VALUES (1,0,'B',0),(1,0,'C',0),(2,0,'C',0),(4,0,'A',0),(1,0,'NoSuchPage',0)")
 	outDir := t.TempDir()
 
-	if err := Run("test", pageSQLFile, pageLinkSQLFile, "", outDir); err != nil {
+	if err := Run("test", pageSQLFile, pageLinkSQLFile, "", outDir, ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -243,7 +243,7 @@ func TestRunNewFormat(t *testing.T) {
 		"INSERT INTO `pagelinks` VALUES (1,0,20),(1,0,30),(2,0,30),(4,0,10),(1,0,999)")
 	outDir := t.TempDir()
 
-	if err := Run("test", pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir); err != nil {
+	if err := Run("test", pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, ""); err != nil {
 		t.Fatal(err)
 	}
 
@@ -289,7 +289,7 @@ func TestRunMultipleStatements(t *testing.T) {
 			"INSERT INTO `pagelinks` VALUES (2,0,'C',0);")
 	outDir := t.TempDir()
 
-	if err := Run("test", pageSQLFile, pageLinkSQLFile, "", outDir); err != nil {
+	if err := Run("test", pageSQLFile, pageLinkSQLFile, "", outDir, ""); err != nil {
 		t.Fatal(err)
 	}
 
