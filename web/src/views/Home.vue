@@ -11,12 +11,12 @@
       <p class="home__subtitle">{{ t('home.subtitle') }}</p>
 
       <!-- Catalog card -->
-      <LibCard>
+      <Card>
         <template #header-title>{{ t('home.catalogTitle') }}</template>
 
         <!-- From field -->
         <div class="field-row">
-          <LibField
+          <Field
             :label="t('home.fieldFrom')"
             type="text"
             :value="wordFrom"
@@ -32,7 +32,7 @@
 
         <!-- To field -->
         <div class="field-row">
-          <LibField
+          <Field
             :label="t('home.fieldTo')"
             type="text"
             :value="wordTo"
@@ -55,7 +55,7 @@
             {{ t('home.cta') }}
           </button>
         </div>
-      </LibCard>
+      </Card>
 
       <!-- Stats bar -->
       <div class="home__stats">
@@ -74,8 +74,8 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useMainStore } from '../store';
-import LibCard from '../components/LibCard.vue';
-import LibField from '../components/LibField.vue';
+import Card from '../components/Card.vue';
+import Field from '../components/Field.vue';
 
 const { t, locale } = useI18n();
 const router = useRouter();
@@ -170,7 +170,7 @@ html.lang-ja .home__subtitle {
   line-height: 1.9;
 }
 
-/* Field row (LibField + random button) */
+/* Field row (Field + random button) */
 .field-row {
   display: flex;
   align-items: flex-end;

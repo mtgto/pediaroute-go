@@ -32,7 +32,7 @@
             </div>
           </div>
 
-          <LibStamp
+          <Stamp
             :found="errorCode === ErrorCode.NoError"
             :meta="errorCode === ErrorCode.NoError
               ? `${(time / 1000).toFixed(3)} sec · ${(routes?.length ?? 1) - 1} hops`
@@ -64,34 +64,34 @@
           </div>
 
           <div class="search__actions">
-            <LibBtn :as="RouterLink" variant="primary" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
+            <Button :as="RouterLink" variant="primary" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
               {{ t('search.reverseRoute') }}
-            </LibBtn>
-            <LibBtn :as="RouterLink" variant="outline" to="/">
+            </Button>
+            <Button :as="RouterLink" variant="outline" to="/">
               {{ t('search.newSearch') }}
-            </LibBtn>
-            <LibBtn as="a" variant="ghost" :href="tweetFoundUrl(routes)" target="_blank" rel="noopener">
+            </Button>
+            <Button as="a" variant="ghost" :href="tweetFoundUrl(routes)" target="_blank" rel="noopener">
               {{ t('message.tweet') }}
-            </LibBtn>
+            </Button>
           </div>
         </template>
 
         <!-- Article not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundFrom || errorCode === ErrorCode.NotFoundTo">
-          <LibNotice>
+          <Notice>
             <template #header-title>{{ t('search.noticeTitle') }}</template>
             <template #body>{{ failureReason }}</template>
-          </LibNotice>
+          </Notice>
           <div class="search__actions">
-            <LibBtn :as="RouterLink" variant="primary" to="/">
+            <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
-            </LibBtn>
+            </Button>
           </div>
         </template>
 
         <!-- Route not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundRoute">
-          <LibNotice :body-large="true">
+          <Notice :body-large="true">
             <template #header-title>{{ t('search.noticeTitle') }}</template>
             <template #body>
               <i18n-t keypath="search.notFoundBody">
@@ -99,17 +99,17 @@
               </i18n-t>
             </template>
             <template #note>{{ t('search.notFoundNote') }}</template>
-          </LibNotice>
+          </Notice>
           <div class="search__actions">
-            <LibBtn :as="RouterLink" variant="primary" to="/">
+            <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
-            </LibBtn>
-            <LibBtn :as="RouterLink" variant="outline" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
+            </Button>
+            <Button :as="RouterLink" variant="outline" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
               {{ t('search.tryReverse') }}
-            </LibBtn>
-            <LibBtn as="a" variant="ghost" :href="tweetNotFoundUrl()" target="_blank" rel="noopener">
+            </Button>
+            <Button as="a" variant="ghost" :href="tweetNotFoundUrl()" target="_blank" rel="noopener">
               {{ t('message.tweet') }}
-            </LibBtn>
+            </Button>
           </div>
         </template>
       </template>
@@ -121,9 +121,9 @@
 import { ref, onMounted, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import LibBtn from '../components/LibBtn.vue';
-import LibNotice from '../components/LibNotice.vue';
-import LibStamp from '../components/LibStamp.vue';
+import Button from '../components/Button.vue';
+import Notice from '../components/Notice.vue';
+import Stamp from '../components/Stamp.vue';
 
 const props = defineProps<{
   wordFrom: string;
