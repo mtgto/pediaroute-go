@@ -17,8 +17,9 @@ COPY --from=asset /node/dist ./cmd/web/assets
 COPY internal ./internal
 RUN make build/web
 
-FROM mtgto/pediaroute-data:latest
+FROM gcr.io/distroless/base-debian13
 WORKDIR /app
 COPY --from=app /go/src/github.com/mtgto/pediaroute-go/build/web .
+VOLUME ["/data"]
 ENV JA=/data/ja/config.json EN=/data/en/config.json
 ENTRYPOINT ["/app/web"]

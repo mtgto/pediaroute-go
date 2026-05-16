@@ -6,7 +6,9 @@
 *.dll
 *.so
 *.dylib
-/build/
+/build/gen
+/build/web
+/build/bench
 
 # Test binary, build with `go test -c`
 *.test
