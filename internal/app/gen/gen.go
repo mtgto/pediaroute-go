@@ -61,12 +61,13 @@ func lookupIndex[K cmp.Ordered](idx []indexEntry[K], key K) (uint32, bool) {
 	return 0, false
 }
 
-func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir string) error {
+func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, version string) error {
 	language := core.Language{
 		Id:        languageId,
 		PageFile:  "page.dat",
 		TitleFile: "title.dat",
 		LinkFile:  "link.dat",
+		Version:   version,
 	}
 	var pages []page
 	pageFile := path.Join(outDir, language.PageFile)

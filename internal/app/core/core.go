@@ -16,6 +16,7 @@ type Language struct {
 	TitleFile string `json:"title_file"`
 	LinkCount uint64 `json:"link_count"`
 	LinkFile  string `json:"link_file"`
+	Version   string `json:"version"` // YYYYMMDD
 }
 
 type Page struct {
