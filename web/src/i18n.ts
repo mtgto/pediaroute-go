@@ -52,8 +52,7 @@ export const i18n = createI18n({
         random: 'Random',
         cta: 'Trace Route →',
         statsIndex: 'Index:',
-        statsAvg: 'Avg. trace:',
-        statsMax: 'Max hops:',
+statsMax: 'Max hops:',
       },
       search: {
         loading: 'Tracing route…',
@@ -143,7 +142,6 @@ export const i18n = createI18n({
         random: 'ランダム',
         cta: '経 路 を 探 す →',
         statsIndex: '収録',
-        statsAvg: '平均',
         statsMax: '最大',
       },
       search: {

@@ -56,9 +56,7 @@
 
       <!-- Stats bar -->
       <div class="home__stats">
-        <span>{{ t('home.statsIndex') }} 6,847,221 articles</span>
-        <span class="home__stats-dot">·</span>
-        <span>{{ t('home.statsAvg') }} 87 ms</span>
+        <span>{{ t('home.statsIndex') }} {{ pageCount }}</span>
         <span class="home__stats-dot">·</span>
         <span>{{ t('home.statsMax') }} 6</span>
       </div>
@@ -67,18 +65,40 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useMainStore } from '../store';
 import Card from '../components/Card.vue';
 import Field from '../components/Field.vue';
 
+interface LangInfo {
+  page_count: number;
+  link_count: number;
+  version: string;
+}
+
 const { t, locale } = useI18n();
 const router = useRouter();
 const store = useMainStore();
 const wordFrom = computed(() => store.wordFrom);
 const wordTo = computed(() => store.wordTo);
+
+const langInfoMap = ref<Record<string, LangInfo>>({});
+
+onMounted(() => {
+  fetch('/api/info')
+    .then((r) => r.json())
+    .then((data: Record<string, LangInfo>) => {
+      langInfoMap.value = data;
+    })
+    .catch(console.error);
+});
+
+const pageCount = computed(() => {
+  const info = langInfoMap.value[locale.value];
+  return info ? info.page_count.toLocaleString() : '…';
+});
 
 const onInputFrom = (e: Event) => {
   if (e.target instanceof HTMLInputElement) store.setWordFrom(e.target.value);
