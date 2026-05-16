@@ -5,7 +5,6 @@
         <div class="lib-logo__word">
           <span class="lib-logo__accent">P</span>edia<span class="lib-logo__accent lib-logo__r">R</span>oute<span class="lib-logo__com">.com</span>
         </div>
-        <div v-if="isJa" class="lib-logo__sub">ペディアルート</div>
       </RouterLink>
       <div class="lib-nav">
         <span class="lib-nav__est">{{ t('nav.est') }}</span>

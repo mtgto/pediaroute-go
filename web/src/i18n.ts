@@ -50,7 +50,6 @@ export const i18n = createI18n({
         fieldTo: 'To',
         placeholder: 'Article title',
         random: 'Random',
-        ctaHint: '{key} to trace route',
         cta: 'Trace Route →',
         statsIndex: 'Index:',
         statsAvg: 'Avg. trace:',
@@ -80,8 +79,8 @@ export const i18n = createI18n({
       about: {
         colophon: 'Colophon',
         heading: 'About PediaRoute.',
-        lead: 'A small project that has quietly traced Wikipedia for thirteen years.',
-        authorBio: 'Designed, built, and maintained since 2013 by {handle}.',
+        lead: 'A small project that has quietly traced Wikipedia.',
+        authorBio: 'Designed, built, and maintained since 2011 by {handle}.',
         header: 'About PediaRoute',
         sixDegree: 'Six degrees of separation',
         sixDegreeUrl: 'https://en.wikipedia.org/wiki/Six_degrees_of_separation',
@@ -126,13 +125,13 @@ export const i18n = createI18n({
         notFoundRoute: '6回のリンクじゃ見つからなかった…ごめんね！',
       },
       nav: {
-        est: '2013年創設',
+        est: '2011年創設',
         home: 'トップ',
         about: 'このサイトについて',
         source: 'ソースコード',
       },
       home: {
-        tagline: 'ウィキペディア経路探索 ・ 2013年から',
+        tagline: 'ウィキペディア経路探索 ・ 2011年から',
         hero: 'ウィキペディアの二つの記事を、{break}{em}結ぶ。',
         heroEm: '６つのリンクで',
         subtitle:
@@ -142,7 +141,6 @@ export const i18n = createI18n({
         fieldTo: '到 着 点',
         placeholder: '記事名を入力',
         random: 'ランダム',
-        ctaHint: '{key}で経路を探す',
         cta: '経 路 を 探 す →',
         statsIndex: '収録',
         statsAvg: '平均',
@@ -172,8 +170,8 @@ export const i18n = createI18n({
       about: {
         colophon: '奥 付',
         heading: 'このサイトについて',
-        lead: '13年のあいだ、静かにウィキペディアを辿りつづける小さなプロジェクト。',
-        authorBio: '2013年より、{handle}が設計・開発・運用しています。',
+        lead: '静かにウィキペディアを辿りつづける小さなプロジェクト。',
+        authorBio: '2011年より、{handle}が設計・開発・運用しています。',
         header: 'PediaRouteについて',
         sixDegree: '六次の隔たり',
         sixDegreeUrl: 'https://ja.wikipedia.org/wiki/%E5%85%AD%E6%AC%A1%E3%81%AE%E9%9A%94%E3%81%9F%E3%82%8A',

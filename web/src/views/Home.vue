@@ -48,9 +48,6 @@
 
         <!-- Actions row -->
         <div class="card-actions">
-          <i18n-t keypath="home.ctaHint" tag="span" class="hint">
-            <template #key><span class="hint-mono">⌘ + Enter</span></template>
-          </i18n-t>
           <button class="submit" @click="search">
             {{ t('home.cta') }}
           </button>
@@ -207,24 +204,8 @@ html.lang-ja .random-btn {
 /* Actions row inside card */
 .card-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
   padding-top: 8px;
-}
-
-/* Keyboard shortcut hint */
-.hint {
-  font-family: var(--f-body);
-  font-size: 11px;
-  color: var(--c-dim);
-}
-
-html.lang-ja .hint {
-  font-size: 12px;
-}
-
-.hint-mono {
-  font-family: var(--f-mono);
 }
 
 /* Submit button */

@@ -14,7 +14,7 @@
           </div>
           <div class="about__section-body">
             <p>
-              {{ t('about.first') }}<a :href="t('about.sixDegreeUrl')">{{ t('about.sixDegree') }}</a
+              {{ t('about.first') }} <a :href="t('about.sixDegreeUrl')">{{ t('about.sixDegree') }}</a
               >{{ t('about.second') }}
             </p>
             <p>{{ t('about.third') }}</p>
