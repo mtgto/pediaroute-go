@@ -2,8 +2,10 @@ import { createI18n } from 'vue-i18n';
 
 const detectUserLanguage = (fallbackLanguage = 'en'): string => {
   const language: string = navigator.language;
-  if (language) {
-    return language.split('-')[0];
+  if (language.startsWith('ja')) {
+    return 'ja';
+  } else if (language.startsWith('en')) {
+    return 'en';
   }
   return fallbackLanguage;
 };
