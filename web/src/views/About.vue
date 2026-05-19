@@ -52,7 +52,7 @@
           <div class="about__section-body">
             <p>
               <i18n-t keypath="about.authorBio">
-                <template #handle><a href="https://twitter.com/mtgto">@mtgto</a></template>
+                <template #handle><a href="https://x.com/mtgto">@mtgto</a></template>
               </i18n-t>
             </p>
             <p class="about__meta">
