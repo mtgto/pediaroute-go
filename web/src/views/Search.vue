@@ -74,8 +74,8 @@
             <Button :as="RouterLink" variant="outline" to="/">
               {{ t('search.newSearch') }}
             </Button>
-            <Button as="a" variant="ghost" :href="tweetFoundUrl(routes)" target="_blank" rel="noopener">
-              {{ t('message.tweet') }}
+            <Button as="a" variant="ghost" :href="shareFoundUrl(routes)" target="_blank" rel="noopener">
+              {{ t('message.share') }}
             </Button>
           </div>
         </template>
@@ -113,8 +113,8 @@
             <Button :as="RouterLink" variant="outline" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
               {{ t('search.tryReverse') }}
             </Button>
-            <Button as="a" variant="ghost" :href="tweetNotFoundUrl()" target="_blank" rel="noopener">
-              {{ t('message.tweet') }}
+            <Button as="a" variant="ghost" :href="shareNotFoundUrl()" target="_blank" rel="noopener">
+              {{ t('message.share') }}
             </Button>
           </div>
         </template>
@@ -157,12 +157,12 @@ const failureReason = ref<string | undefined>(undefined);
 const errorCode = ref<ErrorCodeType>(ErrorCode.NoError);
 const time = ref(0);
 
-const buildTweetUrl = (text: string, url: string): string => {
-  const tweetUrl = new URL('https://x.com/intent/post');
-  tweetUrl.searchParams.append('text', text);
-  tweetUrl.searchParams.append('url', url);
-  tweetUrl.searchParams.append('hashtags', 'pediaroute');
-  return tweetUrl.toString();
+const buildShareUrl = (text: string, url: string): string => {
+  const shareUrl = new URL('https://x.com/intent/post');
+  shareUrl.searchParams.append('text', text);
+  shareUrl.searchParams.append('url', url);
+  shareUrl.searchParams.append('hashtags', 'pediaroute');
+  return shareUrl.toString();
 };
 
 const doSearch = async () => {
@@ -197,9 +197,9 @@ const searchPageUrl = (): string => {
   return url.toString();
 };
 
-const tweetFoundUrl = (route: readonly string[]): string =>
-  buildTweetUrl(
-    t('message.tweetFind', {
+const shareFoundUrl = (route: readonly string[]): string =>
+  buildShareUrl(
+    t('message.shareFound', {
       wordFrom: props.wordFrom,
       wordTo: props.wordTo,
       length: `${route.length - 1}`,
@@ -207,7 +207,7 @@ const tweetFoundUrl = (route: readonly string[]): string =>
     searchPageUrl(),
   );
 
-const tweetNotFoundUrl = (): string => buildTweetUrl(t('message.tweetNotFound', { wordFrom: props.wordFrom, wordTo: props.wordTo }), searchPageUrl());
+const shareNotFoundUrl = (): string => buildShareUrl(t('message.shareNotFound', { wordFrom: props.wordFrom, wordTo: props.wordTo }), searchPageUrl());
 
 onMounted(doSearch);
 watch(() => [props.wordFrom, props.wordTo], doSearch);
