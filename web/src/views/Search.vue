@@ -46,7 +46,7 @@
         <template v-if="errorCode === ErrorCode.NoError && routes">
           <div class="list">
             <template v-for="(word, i) in routes" :key="word">
-              <div :class="['slip', { endpoint: i === 0 || i === (routes?.length ?? 1) - 1 }]">
+              <div :class="['slip', i === (routes?.length ?? 1) - 1 && 'dest']">
                 <div class="step">
                   <template v-if="i === 0">{{ t('search.origin') }}</template>
                   <template v-else-if="i === (routes?.length ?? 1) - 1">{{ t('search.destination') }}</template>
@@ -315,9 +315,43 @@ html.lang-ja .result-label {
   border-radius: 2px;
 }
 
-.slip.endpoint {
-  background: transparent;
-  border-style: dashed;
+.slip.dest {
+  background: var(--c-accent);
+  border: 1px solid var(--c-accent);
+  border-left: 6px solid var(--c-ink);
+  padding: 20px 28px 20px 22px;
+  color: var(--c-paper);
+}
+
+.slip.dest .step {
+  color: rgba(250, 245, 230, 0.85);
+  font-weight: 600;
+  border-right: 1px solid rgba(250, 245, 230, 0.18);
+}
+
+.slip.dest .title {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.slip.dest .title a {
+  color: var(--c-paper);
+}
+
+.slip.dest .title a:hover {
+  color: rgba(250, 245, 230, 0.75);
+  text-decoration: none;
+}
+
+.slip.dest .ext {
+  color: rgba(250, 245, 230, 0.55);
+}
+
+.slip.dest .num {
+  color: rgba(250, 245, 230, 0.85);
+  opacity: 0.95;
+  font-size: 34px;
+  font-weight: 700;
 }
 
 html.lang-ja .slip {
@@ -423,6 +457,10 @@ html.lang-ja .step {
     padding: 14px 16px;
   }
 
+  .slip.dest {
+    padding: 14px 16px 14px 10px;
+  }
+
   html.lang-ja .slip {
     grid-template-columns: 72px 1fr auto;
   }
@@ -431,7 +469,15 @@ html.lang-ja .step {
     font-size: 17px;
   }
 
+  .slip.dest .title {
+    font-size: 17px;
+  }
+
   .num {
+    font-size: 22px;
+  }
+
+  .slip.dest .num {
     font-size: 22px;
   }
 
