@@ -1,23 +1,23 @@
 <template>
   <div class="search">
-    <div class="search__inner">
+    <div class="inner">
       <!-- Loading -->
-      <div v-if="isLoading" class="search__loading">
-        <div class="search__loading-label">
+      <div v-if="isLoading" class="loading">
+        <div class="loading-label">
           {{ t('search.loading') }}
         </div>
-        <div class="search__loading-pair">
+        <div class="loading-pair">
           <em>{{ wordFrom }}</em>
-          <span class="search__arrow">⤳</span>
+          <span class="arrow">⤳</span>
           <em>{{ wordTo }}</em>
         </div>
       </div>
 
       <template v-else>
         <!-- Result header -->
-        <div class="search__result-header">
+        <div class="result-header">
           <div>
-            <div class="search__result-label">
+            <div class="result-label">
               <template v-if="errorCode === ErrorCode.NoError">
                 {{ t('search.routeFound') }}
               </template>
@@ -25,9 +25,9 @@
                 {{ t('search.noRoute') }}
               </template>
             </div>
-            <div class="search__result-pair">
+            <div class="result-pair">
               <em>{{ wordFrom }}</em>
-              <span class="search__arrow">→</span>
+              <span class="arrow">→</span>
               <em>{{ wordTo }}</em>
             </div>
           </div>
@@ -44,30 +44,30 @@
 
         <!-- Route found: stacked catalog slips -->
         <template v-if="errorCode === ErrorCode.NoError && routes">
-          <div class="route-list">
+          <div class="list">
             <template v-for="(word, i) in routes" :key="word">
-              <div :class="['route-slip', i === 0 || i === (routes?.length ?? 1) - 1 ? 'route-slip--endpoint' : '']">
-                <div class="route-slip__step">
+              <div :class="['slip', { endpoint: i === 0 || i === (routes?.length ?? 1) - 1 }]">
+                <div class="step">
                   <template v-if="i === 0">{{ t('search.origin') }}</template>
                   <template v-else-if="i === (routes?.length ?? 1) - 1">{{ t('search.destination') }}</template>
                   <template v-else>
                     <i18n-t keypath="search.step">
                       <template #num
-                        ><span class="route-slip__step-n">{{ i }}</span></template
+                        ><span class="step-n">{{ i }}</span></template
                       >
                     </i18n-t>
                   </template>
                 </div>
-                <div class="route-slip__title">
-                  <a :href="t('message.wikipediaUrl', { word })" target="_blank" rel="noopener">{{ word }}<span class="route-slip__ext">↗</span></a>
+                <div class="title">
+                  <a :href="t('message.wikipediaUrl', { word })" target="_blank" rel="noopener">{{ word }}<span class="ext">↗</span></a>
                 </div>
-                <div class="route-slip__num">{{ i + 1 }}</div>
+                <div class="num">{{ i + 1 }}</div>
               </div>
-              <div v-if="i < (routes?.length ?? 1) - 1" class="route-connector">↓</div>
+              <div v-if="i < (routes?.length ?? 1) - 1" class="connector">↓</div>
             </template>
           </div>
 
-          <div class="search__actions">
+          <div class="actions">
             <Button :as="RouterLink" variant="primary" :to="{ path: '/search', query: { lang: locale, wordFrom: wordTo, wordTo: wordFrom } }">
               {{ t('search.reverseRoute') }}
             </Button>
@@ -86,7 +86,7 @@
             <template #header-title>{{ t('search.noticeTitle') }}</template>
             <template #body>{{ failureReason }}</template>
           </Notice>
-          <div class="search__actions">
+          <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
             </Button>
@@ -106,7 +106,7 @@
             </template>
             <template #note>{{ t('search.notFoundNote') }}</template>
           </Notice>
-          <div class="search__actions">
+          <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
             </Button>
@@ -218,18 +218,18 @@ watch(() => [props.wordFrom, props.wordTo], doSearch);
   padding: 40px 64px 40px;
 }
 
-.search__inner {
+.inner {
   max-width: 880px;
   margin: 0 auto;
 }
 
 /* Loading */
-.search__loading {
+.loading {
   padding: 60px 0;
   text-align: center;
 }
 
-.search__loading-label {
+.loading-label {
   font-family: var(--f-mono);
   font-size: 11px;
   letter-spacing: 0.22em;
@@ -238,13 +238,13 @@ watch(() => [props.wordFrom, props.wordTo], doSearch);
   margin-bottom: 16px;
 }
 
-html.lang-ja .search__loading-label {
+html.lang-ja .loading-label {
   font-family: var(--f-body);
   text-transform: none;
   letter-spacing: 0.3em;
 }
 
-.search__loading-pair {
+.loading-pair {
   font-family: var(--f-head);
   font-size: 24px;
   color: var(--c-dim);
@@ -256,7 +256,7 @@ html.lang-ja .search__loading-label {
 }
 
 /* Result header */
-.search__result-header {
+.result-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -266,7 +266,7 @@ html.lang-ja .search__loading-label {
   gap: 20px;
 }
 
-.search__result-label {
+.result-label {
   font-family: var(--f-mono);
   font-size: 10px;
   letter-spacing: 0.22em;
@@ -275,14 +275,14 @@ html.lang-ja .search__loading-label {
   margin-bottom: 10px;
 }
 
-html.lang-ja .search__result-label {
+html.lang-ja .result-label {
   font-family: var(--f-body);
   font-size: 11px;
   letter-spacing: 0.4em;
   text-transform: none;
 }
 
-.search__result-pair {
+.result-pair {
   font-family: var(--f-head);
   font-size: 26px;
   line-height: 1.3;
@@ -293,18 +293,18 @@ html.lang-ja .search__result-label {
   flex-wrap: wrap;
 }
 
-.search__arrow {
+.arrow {
   color: var(--c-dim);
   font-style: normal;
 }
 
 /* Route list */
-.route-list {
+.list {
   display: flex;
   flex-direction: column;
 }
 
-.route-slip {
+.slip {
   display: grid;
   grid-template-columns: 72px 1fr auto;
   align-items: center;
@@ -315,16 +315,16 @@ html.lang-ja .search__result-label {
   border-radius: 2px;
 }
 
-.route-slip--endpoint {
+.slip.endpoint {
   background: transparent;
   border-style: dashed;
 }
 
-html.lang-ja .route-slip {
+html.lang-ja .slip {
   grid-template-columns: 88px 1fr auto;
 }
 
-.route-slip__step {
+.step {
   font-family: var(--f-mono);
   font-size: 11px;
   color: var(--c-dim);
@@ -335,35 +335,35 @@ html.lang-ja .route-slip {
   line-height: 1.4;
 }
 
-html.lang-ja .route-slip__step {
+html.lang-ja .step {
   font-family: var(--f-body);
   font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: none;
 }
 
-.route-slip__step-n {
+.step-n {
   font-family: var(--f-serif);
   font-style: italic;
 }
 
-.route-slip__title {
+.title {
   font-family: var(--f-head);
   font-size: 22px;
   line-height: 1.2;
   font-weight: 500;
 }
 
-.route-slip__title a {
+.title a {
   color: var(--c-ink);
 }
 
-.route-slip__title a:hover {
+.title a:hover {
   color: var(--c-accent);
   text-decoration: none;
 }
 
-.route-slip__ext {
+.ext {
   margin-left: 6px;
   font-family: var(--f-mono);
   font-size: 11px;
@@ -371,7 +371,7 @@ html.lang-ja .route-slip__step {
   font-weight: 400;
 }
 
-.route-slip__num {
+.num {
   font-family: var(--f-serif);
   font-style: italic;
   font-size: 32px;
@@ -379,7 +379,7 @@ html.lang-ja .route-slip__step {
   opacity: 0.35;
 }
 
-.route-connector {
+.connector {
   height: 16px;
   display: flex;
   justify-content: center;
@@ -390,7 +390,7 @@ html.lang-ja .route-slip__step {
 }
 
 /* Actions */
-.search__actions {
+.actions {
   margin-top: 36px;
   display: flex;
   gap: 14px;
@@ -408,34 +408,34 @@ html.lang-ja .route-slip__step {
     padding: 24px 18px 32px;
   }
 
-  .search__result-header {
+  .result-header {
     flex-wrap: wrap;
   }
 
-  .search__result-pair {
+  .result-pair {
     font-size: 20px;
     gap: 8px;
   }
 
-  .route-slip {
+  .slip {
     grid-template-columns: 56px 1fr auto;
     gap: 14px;
     padding: 14px 16px;
   }
 
-  html.lang-ja .route-slip {
+  html.lang-ja .slip {
     grid-template-columns: 72px 1fr auto;
   }
 
-  .route-slip__title {
+  .title {
     font-size: 17px;
   }
 
-  .route-slip__num {
+  .num {
     font-size: 22px;
   }
 
-  .search__actions {
+  .actions {
     flex-direction: column;
   }
 }

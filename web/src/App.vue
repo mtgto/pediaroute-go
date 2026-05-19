@@ -1,16 +1,16 @@
 <template>
   <div class="app">
-    <header class="lib-header">
-      <RouterLink to="/" class="lib-logo">
-        <div class="lib-logo__word">
-          <span class="lib-logo__accent">P</span>edia<span class="lib-logo__accent lib-logo__r">R</span>oute<span class="lib-logo__com">.com</span>
+    <header class="header">
+      <RouterLink to="/" class="logo">
+        <div class="logo__word">
+          <span class="logo__accent">P</span>edia<span class="logo__accent logo__r">R</span>oute<span class="logo__com">.com</span>
         </div>
       </RouterLink>
-      <div class="lib-nav">
-        <span class="lib-nav__est">{{ t('nav.est') }}</span>
-        <span class="lib-nav__dot">·</span>
-        <button :class="['lib-lang', !isJa && 'lib-lang--active']" @click="locale = 'en'">EN</button>
-        <button :class="['lib-lang', 'lib-lang--jp', isJa && 'lib-lang--active']" @click="locale = 'ja'">日本語</button>
+      <div class="nav">
+        <span class="nav__est">{{ t('nav.est') }}</span>
+        <span class="nav__dot">·</span>
+        <button :class="['lang', !isJa && 'lang--active']" @click="locale = 'en'">EN</button>
+        <button :class="['lang', 'lang--jp', isJa && 'lang--active']" @click="locale = 'ja'">日本語</button>
       </div>
     </header>
 
@@ -18,12 +18,12 @@
       <RouterView />
     </main>
 
-    <footer class="lib-footer">
-      <div class="lib-footer__nav">
+    <footer class="footer">
+      <div class="footer__nav">
         <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
-        <span class="lib-sep"> · </span>
+        <span class="sep"> · </span>
         <RouterLink to="/about">{{ t('nav.about') }}</RouterLink>
-        <span class="lib-sep"> · </span>
+        <span class="sep"> · </span>
         <a href="https://github.com/mtgto/pediaroute-go" target="_blank">{{ t('nav.source') }}</a>
       </div>
     </footer>
@@ -56,7 +56,7 @@ watch(
 }
 
 /* ---- Header ---- */
-.lib-header {
+.header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -64,17 +64,17 @@ watch(
   padding: 36px 64px 22px;
 }
 
-.lib-logo {
+.logo {
   text-decoration: none;
   color: inherit;
   flex-shrink: 0;
 }
 
-.lib-logo:hover {
+.logo:hover {
   text-decoration: none;
 }
 
-.lib-logo__word {
+.logo__word {
   font-family: var(--f-serif);
   font-weight: 700;
   font-size: 44px;
@@ -84,15 +84,15 @@ watch(
   align-items: baseline;
 }
 
-.lib-logo__accent {
+.logo__accent {
   color: var(--c-accent);
 }
 
-.lib-logo__r {
+.logo__r {
   margin-left: 0.06em;
 }
 
-.lib-logo__com {
+.logo__com {
   font-family: var(--f-mono);
   font-weight: 400;
   font-size: 14px;
@@ -101,7 +101,7 @@ watch(
   letter-spacing: 0.02em;
 }
 
-.lib-logo__sub {
+.logo__sub {
   font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
   font-size: 12px;
   color: var(--c-dim);
@@ -109,7 +109,7 @@ watch(
   letter-spacing: 0.2em;
 }
 
-.lib-nav {
+.nav {
   font-family: var(--f-mono);
   font-size: 11px;
   color: var(--c-dim);
@@ -118,16 +118,16 @@ watch(
   align-items: center;
 }
 
-.lib-nav__est {
+.nav__est {
   text-transform: uppercase;
   letter-spacing: 0.16em;
 }
 
-.lib-nav__dot {
+.nav__dot {
   opacity: 0.4;
 }
 
-.lib-lang {
+.lang {
   all: unset;
   cursor: pointer;
   font-family: var(--f-mono);
@@ -137,11 +137,11 @@ watch(
   padding-bottom: 1px;
 }
 
-.lib-lang--jp {
+.lang--jp {
   font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
 }
 
-.lib-lang--active {
+.lang--active {
   font-weight: 600;
   color: var(--c-ink);
   border-bottom-color: var(--c-ink);
@@ -153,7 +153,7 @@ main {
 }
 
 /* ---- Footer ---- */
-.lib-footer {
+.footer {
   font-family: var(--f-mono);
   font-size: 11px;
   color: var(--c-dim);
@@ -164,57 +164,57 @@ main {
   border-top: 1px solid var(--c-rule);
 }
 
-.lib-footer__nav {
+.footer__nav {
   display: flex;
   align-items: center;
 }
 
-.lib-footer__nav a {
+.footer__nav a {
   color: var(--c-dim);
   font-family: var(--f-mono);
   font-size: 11px;
 }
 
-.lib-footer__nav a:hover {
+.footer__nav a:hover {
   color: var(--c-ink);
   text-decoration: none;
 }
 
-.lib-sep {
+.sep {
   opacity: 0.4;
   padding: 0 4px;
 }
 
 /* ---- Mobile ---- */
 @media (max-width: 640px) {
-  .lib-header {
+  .header {
     padding: 20px 18px 14px;
     align-items: center;
   }
 
-  .lib-logo__word {
+  .logo__word {
     font-size: 22px;
   }
 
-  .lib-logo__com {
+  .logo__com {
     font-size: 10px;
     margin-left: 6px;
   }
 
-  .lib-logo__sub {
+  .logo__sub {
     display: none;
   }
 
-  .lib-nav__est,
-  .lib-nav__dot {
+  .nav__est,
+  .nav__dot {
     display: none;
   }
 
-  .lib-nav {
+  .nav {
     gap: 12px;
   }
 
-  .lib-footer {
+  .footer {
     padding: 20px 18px;
     flex-direction: column;
     gap: 8px;

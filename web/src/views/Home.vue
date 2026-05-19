@@ -1,14 +1,14 @@
 <template>
   <div class="home">
-    <div class="home__inner">
-      <p class="home__tagline">{{ t('home.tagline') }}</p>
+    <div class="inner">
+      <p class="tagline">{{ t('home.tagline') }}</p>
 
-      <i18n-t keypath="home.hero" tag="h1" class="home__hero">
+      <i18n-t keypath="home.hero" tag="h1" class="hero">
         <template #break><br /></template>
-        <template #em><em class="home__hero-em">{{ t('home.heroEm') }}</em></template>
+        <template #em><em class="hero-em">{{ t('home.heroEm') }}</em></template>
       </i18n-t>
 
-      <p class="home__subtitle">{{ t('home.subtitle') }}</p>
+      <p class="subtitle">{{ t('home.subtitle') }}</p>
 
       <!-- Catalog card -->
       <Card>
@@ -55,9 +55,9 @@
       </Card>
 
       <!-- Stats bar -->
-      <div class="home__stats">
+      <div class="stats">
         <span>{{ t('home.statsIndex') }} {{ pageCount }}</span>
-        <span class="home__stats-dot">·</span>
+        <span class="stats-dot">·</span>
         <span>{{ t('home.statsMax') }} 6</span>
       </div>
     </div>
@@ -132,13 +132,13 @@ const search = async () => {
   padding: 56px 64px 40px;
 }
 
-.home__inner {
+.inner {
   max-width: 760px;
   margin: 0 auto;
 }
 
 /* Tagline */
-.home__tagline {
+.tagline {
   font-family: var(--f-mono);
   font-size: 11px;
   letter-spacing: 0.22em;
@@ -148,7 +148,7 @@ const search = async () => {
 }
 
 /* Hero heading */
-.home__hero {
+.hero {
   font-family: var(--f-head);
   font-weight: 400;
   font-size: 44px;
@@ -157,24 +157,24 @@ const search = async () => {
   letter-spacing: -0.01em;
 }
 
-html.lang-ja .home__hero {
+html.lang-ja .hero {
   font-weight: 500;
   font-size: 42px;
   line-height: 1.35;
   letter-spacing: 0.02em;
 }
 
-.home__hero-em {
+.hero-em {
   color: var(--c-accent);
   font-style: italic;
 }
 
-html.lang-ja .home__hero-em {
+html.lang-ja .hero-em {
   font-style: normal;
 }
 
 /* Subtitle */
-.home__subtitle {
+.subtitle {
   font-family: var(--f-body);
   font-size: 17px;
   line-height: 1.6;
@@ -183,7 +183,7 @@ html.lang-ja .home__hero-em {
   max-width: 560px;
 }
 
-html.lang-ja .home__subtitle {
+html.lang-ja .subtitle {
   line-height: 1.9;
 }
 
@@ -252,7 +252,7 @@ html.lang-ja .submit {
 }
 
 /* Stats bar */
-.home__stats {
+.stats {
   margin-top: 28px;
   font-family: var(--f-mono);
   font-size: 11px;
@@ -263,11 +263,11 @@ html.lang-ja .submit {
   flex-wrap: wrap;
 }
 
-html.lang-ja .home__stats {
+html.lang-ja .stats {
   font-family: var(--f-body);
 }
 
-.home__stats-dot {
+.stats-dot {
   opacity: 0.4;
 }
 
@@ -277,15 +277,15 @@ html.lang-ja .home__stats {
     padding: 28px 18px 32px;
   }
 
-  .home__hero {
+  .hero {
     font-size: 28px;
   }
 
-  html.lang-ja .home__hero {
+  html.lang-ja .hero {
     font-size: 26px;
   }
 
-  .home__subtitle {
+  .subtitle {
     font-size: 15px;
     margin-bottom: 28px;
   }
