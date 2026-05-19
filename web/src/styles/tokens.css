@@ -5,10 +5,10 @@
   --c-dim: #6b6557;
   --c-rule: rgba(28, 27, 24, 0.14);
   --c-accent: #8a3324;
-  --f-serif: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
-  --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --f-body: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
-  --f-head: 'Libre Caslon Text', 'Iowan Old Style', Georgia, serif;
+  --f-serif: 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif', Georgia, serif;
+  --f-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Roboto Mono', monospace;
+  --f-body: 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif', Georgia, serif;
+  --f-head: 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif', Georgia, serif;
 
   /* Semantic tokens for multilingual typography */
   --ui-font: var(--f-mono);  /* UI labels: mono in EN, body in JA */
@@ -17,8 +17,8 @@
 }
 
 html.lang-ja {
-  --f-body: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  --f-head: 'Shippori Mincho B1', 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  --f-body: 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', serif;
+  --f-head: 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', serif;
   --ui-font: var(--f-body);
   --cta-font: var(--f-head);
   --ui-tt: none;

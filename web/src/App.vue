@@ -102,7 +102,7 @@ watch(
 }
 
 .logo__sub {
-  font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', serif;
   font-size: 12px;
   color: var(--c-dim);
   margin-top: 6px;
@@ -138,7 +138,7 @@ watch(
 }
 
 .lang--jp {
-  font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', serif;
 }
 
 .lang--active {
