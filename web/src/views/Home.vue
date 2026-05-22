@@ -5,7 +5,9 @@
 
       <i18n-t keypath="home.hero" tag="h1" class="hero">
         <template #break><br /></template>
-        <template #em><em class="hero-em">{{ t('home.heroEm') }}</em></template>
+        <template #em
+          ><em class="hero-em">{{ t('home.heroEm') }}</em></template
+        >
       </i18n-t>
 
       <p class="subtitle">{{ t('home.subtitle') }}</p>
@@ -21,13 +23,13 @@
             type="text"
             :value="wordFrom"
             :placeholder="t('home.placeholder')"
+            :suggestions="suggestionsFrom"
             @input="onInputFrom"
+            @select="selectFrom"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
           />
-          <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomFrom">
-            ↻ {{ t('home.random') }}
-          </button>
+          <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomFrom">↻ {{ t('home.random') }}</button>
         </div>
 
         <!-- To field -->
@@ -37,13 +39,13 @@
             type="text"
             :value="wordTo"
             :placeholder="t('home.placeholder')"
+            :suggestions="suggestionsTo"
             @input="onInputTo"
+            @select="selectTo"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
           />
-          <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomTo">
-            ↻ {{ t('home.random') }}
-          </button>
+          <button class="random-btn" :title="t('message.buttonRandom')" @click="getRandomTo">↻ {{ t('home.random') }}</button>
         </div>
 
         <!-- Actions row -->
@@ -69,6 +71,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useMainStore } from '../store';
+import { useRelated } from '../composables/useRelated';
 import Card from '../components/Card.vue';
 import Field from '../components/Field.vue';
 
@@ -83,6 +86,9 @@ const router = useRouter();
 const store = useMainStore();
 const wordFrom = computed(() => store.wordFrom);
 const wordTo = computed(() => store.wordTo);
+
+const { suggestions: suggestionsFrom, fetch: fetchFrom, clear: clearFrom } = useRelated(locale);
+const { suggestions: suggestionsTo, fetch: fetchTo, clear: clearTo } = useRelated(locale);
 
 const langInfoMap = ref<Record<string, LangInfo>>({});
 
@@ -101,10 +107,23 @@ const pageCount = computed(() => {
 });
 
 const onInputFrom = (e: Event) => {
-  if (e.target instanceof HTMLInputElement) store.setWordFrom(e.target.value);
+  if (!(e.target instanceof HTMLInputElement)) return;
+  store.setWordFrom(e.target.value);
+  fetchFrom(e.target.value);
 };
 const onInputTo = (e: Event) => {
-  if (e.target instanceof HTMLInputElement) store.setWordTo(e.target.value);
+  if (!(e.target instanceof HTMLInputElement)) return;
+  store.setWordTo(e.target.value);
+  fetchTo(e.target.value);
+};
+
+const selectFrom = (word: string) => {
+  store.setWordFrom(word);
+  clearFrom();
+};
+const selectTo = (word: string) => {
+  store.setWordTo(word);
+  clearTo();
 };
 
 const getRandom = async (setter: (word: string) => void) => {
@@ -115,8 +134,16 @@ const getRandom = async (setter: (word: string) => void) => {
     })
     .catch(console.error);
 };
-const getRandomFrom = () => getRandom(store.setWordFrom);
-const getRandomTo = () => getRandom(store.setWordTo);
+const getRandomFrom = () =>
+  getRandom((w) => {
+    store.setWordFrom(w);
+    clearFrom();
+  });
+const getRandomTo = () =>
+  getRandom((w) => {
+    store.setWordTo(w);
+    clearTo();
+  });
 
 const search = async () => {
   if (!store.wordFrom.trim() || !store.wordTo.trim()) return;

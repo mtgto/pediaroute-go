@@ -11,9 +11,9 @@
   --f-head: 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif', Georgia, serif;
 
   /* Semantic tokens for multilingual typography */
-  --ui-font: var(--f-mono);  /* UI labels: mono in EN, body in JA */
+  --ui-font: var(--f-mono); /* UI labels: mono in EN, body in JA */
   --cta-font: var(--f-mono); /* CTA buttons: mono in EN, head in JA */
-  --ui-tt: uppercase;        /* text-transform: none in JA */
+  --ui-tt: uppercase; /* text-transform: none in JA */
 }
 
 html.lang-ja {
