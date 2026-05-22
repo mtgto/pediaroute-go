@@ -52,8 +52,7 @@ export const i18n = createI18n({
         placeholder: 'Article title',
         random: 'Random',
         cta: 'Trace Route →',
-        statsIndex: 'Index:',
-        statsMax: 'Max hops:',
+        statsArticles: '{count} articles indexed',
       },
       search: {
         loading: 'Tracing route…',
@@ -141,8 +140,7 @@ export const i18n = createI18n({
         placeholder: '記事名を入力',
         random: 'ランダム',
         cta: '経 路 を 探 す →',
-        statsIndex: '収録',
-        statsMax: '最大',
+        statsArticles: '対象 {count} ページ',
       },
       search: {
         loading: '経路を探しています...',

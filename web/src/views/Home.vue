@@ -58,9 +58,9 @@
 
       <!-- Stats bar -->
       <div class="stats">
-        <span>{{ t('home.statsIndex') }} {{ pageCount }}</span>
-        <span class="stats-dot">·</span>
-        <span>{{ t('home.statsMax') }} 6</span>
+        <span>{{ t('home.statsArticles', { count: pageCount }) }}</span>
+        <span v-if="version" class="stats-sep">·</span>
+        <span v-if="version">{{ version }}</span>
       </div>
     </div>
   </div>
@@ -105,6 +105,8 @@ const pageCount = computed(() => {
   const info = langInfoMap.value[locale.value];
   return info ? info.page_count.toLocaleString() : '…';
 });
+
+const version = computed(() => langInfoMap.value[locale.value]?.version ?? '');
 
 const onInputFrom = (e: Event) => {
   if (!(e.target instanceof HTMLInputElement)) return;
@@ -294,7 +296,7 @@ html.lang-ja .stats {
   font-family: var(--f-body);
 }
 
-.stats-dot {
+.stats-sep {
   opacity: 0.4;
 }
 
