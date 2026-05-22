@@ -9,7 +9,15 @@
         <p>
           <label>
             <div class="word-input-wrapper">
-              <input type="text" class="word" name="wordFrom" :value="wordFrom" @input="setWordFrom" @focus="getRelated(wordFrom, (w) => (relatedFrom = w))" @blur="relatedFrom = []" />
+              <input
+                type="text"
+                class="word"
+                name="wordFrom"
+                :value="wordFrom"
+                @input="setWordFrom"
+                @focus="getRelated(wordFrom, (w) => (relatedFrom = w))"
+                @blur="relatedFrom = []"
+              />
               <button class="random" :title="t('message.buttonRandom')" @click="getRandomFrom">
                 <img src="../assets/baseline-shuffle-24px.svg" />
               </button>
@@ -23,7 +31,15 @@
         <p>
           <label>
             <div class="word-input-wrapper">
-              <input type="text" class="word" name="wordTo" :value="wordTo" @input="setWordTo" @focus="getRelated(wordTo, (w) => (relatedTo = w))" @blur="relatedTo = []" />
+              <input
+                type="text"
+                class="word"
+                name="wordTo"
+                :value="wordTo"
+                @input="setWordTo"
+                @focus="getRelated(wordTo, (w) => (relatedTo = w))"
+                @blur="relatedTo = []"
+              />
               <button class="random" :title="t('message.buttonRandom')" @click="getRandomTo">
                 <img src="../assets/baseline-shuffle-24px.svg" />
               </button>
