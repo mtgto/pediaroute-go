@@ -1,0 +1,10 @@
+pre-commit:
+  commands:
+    go-fmt:
+      glob: "**/*.go"
+      run: gofmt -w {staged_files}
+      stage_fixed: true
+    vue-fmt:
+      glob: "**/*.{vue,ts}"
+      run: web/node_modules/.bin/oxfmt {staged_files}
+      stage_fixed: true

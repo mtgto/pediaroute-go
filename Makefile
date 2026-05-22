@@ -24,6 +24,10 @@ $(BENCH): cmd/bench/main.go $(wildcard internal/app/core/*.go)
 test-web:
 	$(GO) test -v github.com/mtgto/pediaroute-go/internal/app/web
 
+.PHONY: setup
+setup:
+	go tool lefthook install
+
 .PHONY: image
 image:
 	docker build --file build/package/app/Dockerfile --tag mtgto/pediaroute:latest .
