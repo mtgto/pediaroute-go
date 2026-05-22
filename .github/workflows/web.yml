@@ -1,20 +1,26 @@
 name: web
+
 on:
   push:
     branches: [master]
     paths:
-      - 'web/**'
-      - '.github/workflows/web.yml'
+      - "web/**"
+      - ".github/workflows/web.yml"
   pull_request:
     branches: [master]
     paths:
-      - 'web/**'
-      - '.github/workflows/web.yml'
+      - "web/**"
+      - ".github/workflows/web.yml"
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
+    timeout-minutes: 10
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
@@ -24,7 +30,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: 'pnpm'
+          cache: "pnpm"
           cache-dependency-path: web/pnpm-lock.yaml
       - name: pnpm install
         run: pnpm install --frozen-lockfile
