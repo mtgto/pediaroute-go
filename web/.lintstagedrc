@@ -1,3 +1,0 @@
-{
-  "*.{cjs,js,json,ts,vue}": "prettier --write --ignore-unknown"
-}
