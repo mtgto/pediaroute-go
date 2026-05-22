@@ -21,10 +21,9 @@
           <Field
             :label="t('home.fieldFrom')"
             type="text"
-            :value="wordFrom"
+            v-model="wordFrom"
             :placeholder="t('home.placeholder')"
             :suggestions="suggestionsFrom"
-            @input="onInputFrom"
             @select="selectFrom"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
@@ -37,10 +36,9 @@
           <Field
             :label="t('home.fieldTo')"
             type="text"
-            :value="wordTo"
+            v-model="wordTo"
             :placeholder="t('home.placeholder')"
             :suggestions="suggestionsTo"
-            @input="onInputTo"
             @select="selectTo"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
@@ -67,7 +65,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useMainStore } from '../store';
@@ -84,11 +83,13 @@ interface LangInfo {
 const { t, locale } = useI18n();
 const router = useRouter();
 const store = useMainStore();
-const wordFrom = computed(() => store.wordFrom);
-const wordTo = computed(() => store.wordTo);
+const { wordFrom, wordTo } = storeToRefs(store);
 
 const { suggestions: suggestionsFrom, fetch: fetchFrom, clear: clearFrom } = useRelated(locale);
 const { suggestions: suggestionsTo, fetch: fetchTo, clear: clearTo } = useRelated(locale);
+
+watch(wordFrom, (val) => fetchFrom(val));
+watch(wordTo, (val) => fetchTo(val));
 
 const langInfoMap = ref<Record<string, LangInfo>>({});
 
@@ -108,23 +109,12 @@ const pageCount = computed(() => {
 
 const version = computed(() => langInfoMap.value[locale.value]?.version ?? '');
 
-const onInputFrom = (e: Event) => {
-  if (!(e.target instanceof HTMLInputElement)) return;
-  store.setWordFrom(e.target.value);
-  fetchFrom(e.target.value);
-};
-const onInputTo = (e: Event) => {
-  if (!(e.target instanceof HTMLInputElement)) return;
-  store.setWordTo(e.target.value);
-  fetchTo(e.target.value);
-};
-
 const selectFrom = (word: string) => {
-  store.setWordFrom(word);
+  wordFrom.value = word;
   clearFrom();
 };
 const selectTo = (word: string) => {
-  store.setWordTo(word);
+  wordTo.value = word;
   clearTo();
 };
 
@@ -138,20 +128,20 @@ const getRandom = async (setter: (word: string) => void) => {
 };
 const getRandomFrom = () =>
   getRandom((w) => {
-    store.setWordFrom(w);
+    wordFrom.value = w;
     clearFrom();
   });
 const getRandomTo = () =>
   getRandom((w) => {
-    store.setWordTo(w);
+    wordTo.value = w;
     clearTo();
   });
 
 const search = async () => {
-  if (!store.wordFrom.trim() || !store.wordTo.trim()) return;
+  if (!wordFrom.value.trim() || !wordTo.value.trim()) return;
   await router.push({
     path: '/search',
-    query: { lang: locale.value, wordFrom: store.wordFrom, wordTo: store.wordTo },
+    query: { lang: locale.value, wordFrom: wordFrom.value, wordTo: wordTo.value },
   });
 };
 </script>

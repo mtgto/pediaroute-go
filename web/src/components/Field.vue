@@ -1,7 +1,7 @@
 <template>
   <div class="field">
     <div class="label">{{ label }}</div>
-    <input class="input" v-bind="$attrs" @focus="onFocus" @blur="onBlur" @keydown="onKeydown" />
+    <input class="input" v-bind="$attrs" v-model="inputValue" @focus="onFocus" @blur="onBlur" @keydown="onKeydown" />
     <ul v-if="showDropdown" class="dropdown" role="listbox">
       <li
         v-for="(word, i) in suggestions"
@@ -19,20 +19,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useAttrs, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps<{
   label: string;
+  modelValue: string;
   suggestions?: string[];
 }>();
 
 const emit = defineEmits<{
+  'update:modelValue': [string];
   select: [word: string];
 }>();
 
 defineOptions({ inheritAttrs: false });
 
-const attrs = useAttrs();
 const isFocused = ref(false);
 const activeIndex = ref(-1);
 
@@ -43,10 +44,14 @@ watch(
   },
 );
 
+const inputValue = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+});
+
 const showDropdown = computed(() => {
   if (!isFocused.value || !props.suggestions?.length) return false;
-  const v = String(attrs.value ?? '');
-  return !props.suggestions.some((s) => s.toLowerCase() === v.toLowerCase());
+  return !props.suggestions.some((s) => s.toLowerCase() === props.modelValue.toLowerCase());
 });
 
 const onFocus = () => {
@@ -68,7 +73,7 @@ const onKeydown = (e: KeyboardEvent) => {
     activeIndex.value = (activeIndex.value - 1 + list.length) % list.length;
   } else if (e.key === 'Enter' && activeIndex.value >= 0) {
     e.preventDefault();
-    emit('select', list[activeIndex.value]);
+    emit('select', list[activeIndex.value]!);
     isFocused.value = false;
   } else if (e.key === 'Escape') {
     isFocused.value = false;
