@@ -14,14 +14,10 @@
           </div>
           <div class="section-body">
             <p>
-              {{ t('about.first') }} <a :href="t('about.sixDegreeUrl')">{{ t('about.sixDegree') }}</a
-              >{{ t('about.second') }}
+              {{ t('about.sixDegreeIntro') }} <a :href="t('about.sixDegreeUrl')">{{ t('about.sixDegree') }}</a
+              >{{ t('about.sixDegreeSuffix') }}
             </p>
-            <p>{{ t('about.third') }}</p>
-            <p>
-              {{ t('about.fourth') }}<a href="https://github.com/mtgto/pediaroute-go">{{ t('about.sourceCode') }}</a
-              >{{ t('about.fifth') }}
-            </p>
+            <p>{{ t('about.routeDescription') }}</p>
           </div>
         </div>
 
@@ -33,12 +29,12 @@
           </div>
           <div class="section-body">
             <p>
-              {{ t('about.sixth') }}<a :href="t('about.databaseUrl')">{{ t('about.database') }}</a
-              >{{ t('about.seventh') }}
+              {{ t('about.databasePrefix') }}<a :href="t('about.databaseUrl')">{{ t('about.database') }}</a
+              >{{ t('about.databaseSuffix') }}
             </p>
             <p>
-              {{ t('about.eighth') }}<a :href="t('about.commonsUrl')">{{ t('about.commons') }}</a
-              >{{ t('about.ninth') }}
+              {{ t('about.licensePrefix') }}<a :href="t('about.commonsUrl')">{{ t('about.commons') }}</a
+              >{{ t('about.licenseSuffix') }}
             </p>
           </div>
         </div>
