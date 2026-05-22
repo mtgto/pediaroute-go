@@ -1,7 +1,7 @@
 <template>
   <div class="field">
     <div class="label">{{ label }}</div>
-    <input class="input" v-bind="$attrs" v-model="inputValue" @focus="onFocus" @blur="onBlur" @keydown="onKeydown" />
+    <input class="input" v-bind="$attrs" v-model="model" @focus="onFocus" @blur="onBlur" @keydown="onKeydown" />
     <ul v-if="showDropdown" class="dropdown" role="listbox">
       <li
         v-for="(word, i) in suggestions"
@@ -21,15 +21,11 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 
+const model = defineModel<string>({ required: true });
+
 const props = defineProps<{
   label: string;
-  modelValue: string;
   suggestions?: string[];
-}>();
-
-const emit = defineEmits<{
-  'update:modelValue': [string];
-  select: [word: string];
 }>();
 
 defineOptions({ inheritAttrs: false });
@@ -44,14 +40,9 @@ watch(
   },
 );
 
-const inputValue = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val),
-});
-
 const showDropdown = computed(() => {
   if (!isFocused.value || !props.suggestions?.length) return false;
-  return !props.suggestions.some((s) => s.toLowerCase() === props.modelValue.toLowerCase());
+  return !props.suggestions.some((s) => s.toLowerCase() === model.value.toLowerCase());
 });
 
 const onFocus = () => {
@@ -73,7 +64,7 @@ const onKeydown = (e: KeyboardEvent) => {
     activeIndex.value = (activeIndex.value - 1 + list.length) % list.length;
   } else if (e.key === 'Enter' && activeIndex.value >= 0) {
     e.preventDefault();
-    emit('select', list[activeIndex.value]!);
+    model.value = list[activeIndex.value]!;
     isFocused.value = false;
   } else if (e.key === 'Escape') {
     isFocused.value = false;
@@ -81,7 +72,7 @@ const onKeydown = (e: KeyboardEvent) => {
 };
 
 const onSelect = (word: string) => {
-  emit('select', word);
+  model.value = word;
   isFocused.value = false;
 };
 </script>
