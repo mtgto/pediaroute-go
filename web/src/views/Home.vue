@@ -24,7 +24,6 @@
             v-model="wordFrom"
             :placeholder="t('home.placeholder')"
             :suggestions="suggestionsFrom"
-            @select="selectFrom"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
           />
@@ -39,7 +38,6 @@
             v-model="wordTo"
             :placeholder="t('home.placeholder')"
             :suggestions="suggestionsTo"
-            @select="selectTo"
             @keydown.ctrl.enter.prevent="search"
             @keydown.meta.enter.prevent="search"
           />
@@ -108,15 +106,6 @@ const pageCount = computed(() => {
 });
 
 const version = computed(() => langInfoMap.value[locale.value]?.version ?? '');
-
-const selectFrom = (word: string) => {
-  wordFrom.value = word;
-  clearFrom();
-};
-const selectTo = (word: string) => {
-  wordTo.value = word;
-  clearTo();
-};
 
 const getRandom = async (setter: (word: string) => void) => {
   await fetch(`/api/random?lang=${encodeURI(locale.value)}`)
