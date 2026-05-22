@@ -74,6 +74,30 @@ func (w *Wikipedia) GetRandomPage() (string, error) {
 	}
 }
 
+func (w *Wikipedia) RelatedPages(word string, limit int) ([]string, error) {
+	lowerWord := strings.ToLower(word)
+	index := sort.Search(len(w.pages), func(i int) bool {
+		t, err := w.title(w.pages[i])
+		if err != nil {
+			log.Printf("Error while RelatedPages: %v", err)
+		}
+		return strings.ToLower(t) >= lowerWord
+	})
+	results := make([]string, 0, limit)
+	for i := index; i < len(w.pages) && len(results) < limit; i++ {
+		t, err := w.title(w.pages[i])
+		if err != nil {
+			log.Printf("Error while RelatedPages: %v", err)
+			continue
+		}
+		if !strings.HasPrefix(strings.ToLower(t), lowerWord) {
+			break
+		}
+		results = append(results, t)
+	}
+	return results, nil
+}
+
 func (w *Wikipedia) generateWordSet(word string) map[uint32]struct{} {
 	lowercaseWord := strings.ToLower(word)
 	set := make(map[uint32]struct{}, 0)
