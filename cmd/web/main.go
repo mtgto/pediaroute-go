@@ -149,6 +149,32 @@ func main() {
 		}
 	})
 
+	http.HandleFunc("/api/related", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Not Found", http.StatusNotFound)
+			return
+		}
+		lang := r.FormValue("lang")
+		title := r.FormValue("title")
+		if len([]rune(title)) < 2 {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+		wikipedia, ok := wikipedias[lang]
+		if !ok {
+			http.Error(w, "Not Found", http.StatusNotFound)
+			return
+		}
+		titles, err := wikipedia.RelatedPages(title, 10)
+		if err != nil {
+			log.Printf("Error while get related pages: %v\n", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(titles)
+	})
+
 	http.HandleFunc("/api/random", func (w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			lang := r.FormValue("lang")
