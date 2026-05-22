@@ -1,9 +1,9 @@
 <template>
-  <div :class="['stamp', found ? 'stamp--found' : 'stamp--notfound']">
-    <div class="stamp__word">
+  <div :class="['stamp', found ? 'found' : 'notfound']">
+    <div class="word">
       {{ found ? t('stamp.found') : t('stamp.notFound') }}
     </div>
-    <div class="stamp__meta">{{ meta }}</div>
+    <div class="meta">{{ meta }}</div>
   </div>
 </template>
 
@@ -38,26 +38,26 @@ html.lang-ja .stamp {
   letter-spacing: 0.4em;
 }
 
-.stamp--found {
+.stamp.found {
   transform: rotate(-2deg);
 }
 
-.stamp--notfound {
+.stamp.notfound {
   transform: rotate(-3deg);
 }
 
-.stamp__word {
+.word {
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.16em;
 }
 
-html.lang-ja .stamp__word {
+html.lang-ja .word {
   font-size: 14px;
   letter-spacing: 0.5em;
 }
 
-.stamp__meta {
+.meta {
   font-size: 9px;
   opacity: 0.8;
   margin-top: 1px;

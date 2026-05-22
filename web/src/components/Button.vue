@@ -1,5 +1,5 @@
 <template>
-  <component :is="as" :class="['btn', variant && `btn--${variant}`]" v-bind="$attrs">
+  <component :is="as" :class="['button', variant]" v-bind="$attrs">
     <slot />
   </component>
 </template>
@@ -19,7 +19,7 @@ defineOptions({ inheritAttrs: false });
 </script>
 
 <style scoped>
-.btn {
+.button {
   display: inline-block;
   padding: 12px 20px;
   font-family: var(--cta-font);
@@ -32,45 +32,45 @@ defineOptions({ inheritAttrs: false });
   background: none;
 }
 
-html.lang-ja .btn {
+html.lang-ja .button {
   font-size: 13px;
   letter-spacing: 0.32em;
 }
 
-.btn--primary {
+.button.primary {
   background: var(--c-ink);
   color: var(--c-paper);
 }
 
-.btn--primary:hover {
+.button.primary:hover {
   background: var(--c-accent);
   color: var(--c-paper);
   text-decoration: none;
 }
 
-.btn--outline {
+.button.outline {
   border: 1px solid var(--c-ink);
   color: var(--c-ink);
 }
 
-.btn--outline:hover {
+.button.outline:hover {
   border-color: var(--c-accent);
   color: var(--c-accent);
   text-decoration: none;
 }
 
-.btn--ghost {
+.button.ghost {
   color: var(--c-dim);
   border-bottom: 1px solid var(--c-rule);
 }
 
-.btn--ghost:hover {
+.button.ghost:hover {
   color: var(--c-ink);
   text-decoration: none;
 }
 
 @media (max-width: 640px) {
-  .btn {
+  .button {
     text-align: center;
   }
 }
