@@ -2,22 +2,13 @@
   <div class="card">
     <div class="header">
       <slot name="header-title" />
-      <span class="num">{{ num }}</span>
+      <span class="num">№ 0001</span>
     </div>
     <div class="body">
       <slot />
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-withDefaults(
-  defineProps<{
-    num?: string;
-  }>(),
-  { num: '№ 0001' },
-);
-</script>
 
 <style scoped>
 .card {

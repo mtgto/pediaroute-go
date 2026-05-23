@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 
 const cache = new Map<string, string[]>();
@@ -34,6 +34,12 @@ export function useRelated(locale: Ref<string>) {
   const clear = () => {
     suggestions.value = [];
   };
+
+  onUnmounted(() => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  });
 
   return { suggestions, fetch, clear };
 }

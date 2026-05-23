@@ -75,7 +75,7 @@ watch(
 }
 
 .logo__word {
-  font-family: var(--f-serif);
+  font-family: var(--f-serif-en);
   font-weight: 700;
   font-size: 44px;
   letter-spacing: -0.01em;

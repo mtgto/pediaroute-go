@@ -46,10 +46,10 @@
         <template v-if="errorCode === ErrorCode.NoError && routes">
           <div class="list">
             <template v-for="(word, i) in routes" :key="word">
-              <div :class="['slip', i === (routes?.length ?? 1) - 1 && 'dest']">
+              <div :class="['slip', i === routes.length - 1 && 'dest']">
                 <div class="step">
                   <template v-if="i === 0">{{ t('search.origin') }}</template>
-                  <template v-else-if="i === (routes?.length ?? 1) - 1">{{ t('search.destination') }}</template>
+                  <template v-else-if="i === routes.length - 1">{{ t('search.destination') }}</template>
                   <template v-else>
                     <i18n-t keypath="search.step">
                       <template #num
@@ -63,7 +63,7 @@
                 </div>
                 <div class="num">{{ i + 1 }}</div>
               </div>
-              <div v-if="i < (routes?.length ?? 1) - 1" class="connector">↓</div>
+              <div v-if="i < routes.length - 1" class="connector">↓</div>
             </template>
           </div>
 
@@ -377,7 +377,7 @@ html.lang-ja .step {
 }
 
 .step-n {
-  font-family: var(--f-serif);
+  font-family: var(--f-head);
   font-style: italic;
 }
 
@@ -406,7 +406,7 @@ html.lang-ja .step {
 }
 
 .num {
-  font-family: var(--f-serif);
+  font-family: var(--f-head);
   font-style: italic;
   font-size: 32px;
   color: var(--c-accent);
