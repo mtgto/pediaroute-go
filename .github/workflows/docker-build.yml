@@ -21,6 +21,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
+          context: .
           file: build/package/app/Dockerfile
           push: true
           tags: mtgto/pediaroute:latest
