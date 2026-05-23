@@ -36,7 +36,7 @@ func main() {
 
 	var (
 		japaneseConfigFile = flag.String("ja", "ja", "Configuration file path of Japanese data")
-		englishConfigFile = flag.String("en", "en", "Configuration file path of English data")
+		englishConfigFile  = flag.String("en", "en", "Configuration file path of English data")
 	)
 
 	flag.Parse()
@@ -91,6 +91,7 @@ func main() {
 			http.Error(w, "Not Found", http.StatusNotFound)
 			return
 		}
+		log.Println("Info requested")
 		result := make(map[string]LanguageInfo)
 		for lang, meta := range languagesMeta {
 			result[lang] = LanguageInfo{
@@ -105,15 +106,15 @@ func main() {
 
 	type Pair struct {
 		From string `json:"from"`
-		To string `json:"to"`
+		To   string `json:"to"`
 	}
 
 	type SearchResult struct {
 		Route []string `json:"route"`
-		Error int `json:"error"`
+		Error int      `json:"error"`
 	}
 
-	http.HandleFunc("/api/search", func (w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			var pair Pair
 			var result SearchResult
@@ -165,6 +166,7 @@ func main() {
 			http.Error(w, "Not Found", http.StatusNotFound)
 			return
 		}
+		log.Printf("Language: %v, Related pages for \"%v\"\n", lang, title)
 		titles, err := wikipedia.RelatedPages(title, 10)
 		if err != nil {
 			log.Printf("Error while get related pages: %v\n", err)
@@ -175,7 +177,7 @@ func main() {
 		json.NewEncoder(w).Encode(titles)
 	})
 
-	http.HandleFunc("/api/random", func (w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/random", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			lang := r.FormValue("lang")
 			if wikipedia, ok := wikipedias[lang]; ok {
