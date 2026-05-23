@@ -1,5 +1,5 @@
 <template>
-  <div class="field">
+  <div class="field" :class="{ valid: isValid }">
     <div class="label">{{ label }}</div>
     <input class="input" v-bind="$attrs" v-model="model" @focus="onFocus" @blur="onBlur" @keydown="onKeydown" />
     <ul v-if="showDropdown" class="dropdown" role="listbox">
@@ -40,9 +40,11 @@ watch(
   },
 );
 
+const isValid = computed(() => !!model.value && !!props.suggestions?.some((s) => s.toLowerCase() === model.value.toLowerCase()));
+
 const showDropdown = computed(() => {
   if (!isFocused.value || !props.suggestions?.length) return false;
-  return !props.suggestions.some((s) => s.toLowerCase() === model.value.toLowerCase());
+  return !isValid.value;
 });
 
 const onFocus = () => {
@@ -83,6 +85,11 @@ const onSelect = (word: string) => {
   border-bottom: 1px solid var(--c-ink);
   padding-bottom: 8px;
   position: relative;
+  transition: border-color 0.2s;
+}
+
+.valid {
+  border-bottom-color: #3a7d44;
 }
 
 .label {
