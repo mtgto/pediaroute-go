@@ -1,148 +1,224 @@
 <template>
-  <div id="app">
-    <router-view />
-    <footer>
-      <nav>
-        <router-link to="/">Home</router-link>&nbsp;|
-        <router-link to="/about">About</router-link>
-      </nav>
+  <div class="app">
+    <header class="header">
+      <RouterLink to="/" class="logo">
+        <div class="logo__word">
+          <span class="logo__accent">P</span>edia<span class="logo__accent logo__r">R</span>oute<span class="logo__com">.com</span>
+        </div>
+      </RouterLink>
+      <div class="nav">
+        <span class="nav__est">{{ t('nav.est') }}</span>
+        <span class="nav__dot">·</span>
+        <button :class="['lang', !isJa && 'lang--active']" @click="locale = 'en'">EN</button>
+        <button :class="['lang', 'lang--jp', isJa && 'lang--active']" @click="locale = 'ja'">日本語</button>
+      </div>
+    </header>
+
+    <main>
+      <RouterView />
+    </main>
+
+    <footer class="footer">
+      <div class="footer__nav">
+        <RouterLink to="/">{{ t('nav.home') }}</RouterLink>
+        <span class="sep"> · </span>
+        <RouterLink to="/about">{{ t('nav.about') }}</RouterLink>
+        <span class="sep"> · </span>
+        <a href="https://github.com/mtgto/pediaroute-go" target="_blank">{{ t('nav.source') }}</a>
+      </div>
     </footer>
   </div>
 </template>
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
+<script setup lang="ts">
+import { computed, watch } from 'vue';
+import { RouterLink, RouterView } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+
+const { t, locale } = useI18n();
+const isJa = computed(() => locale.value === 'ja');
+
+watch(
+  locale,
+  (lang) => {
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.className = `lang-${lang}`;
+  },
+  { immediate: true },
+);
+</script>
+
+<style scoped>
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
-body {
-  width: 980px;
-  margin: 0 auto;
+/* ---- Header ---- */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--c-rule);
+  padding: 36px 64px 22px;
 }
 
-div.center {
-  text-align: center;
+.logo {
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
 }
 
-a {
-  display: inline-block;
-  padding: 0.1em;
-  color: #5fa990;
+.logo:hover {
+  text-decoration: none;
 }
 
-header {
-  float: left;
-  width: 800px;
+.logo__word {
+  font-family: var(--f-serif-en);
+  font-weight: 700;
+  font-size: 44px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
 }
 
-header > h1 {
-  font-size: 24pt;
+.logo__accent {
+  color: var(--c-accent);
 }
 
-header > h1 > span {
-  font-size: 1.2em;
-  color: #8fd9c0;
+.logo__r {
+  margin-left: 0.06em;
 }
 
-header > p {
-  font-size: 11pt;
+.logo__com {
+  font-family: var(--f-mono);
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--c-dim);
+  margin-left: 10px;
+  letter-spacing: 0.02em;
 }
 
-article {
-  margin: 10px 0;
-  float: left;
-  width: 800px;
+.logo__sub {
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', serif;
+  font-size: 12px;
+  color: var(--c-dim);
+  margin-top: 6px;
+  letter-spacing: 0.2em;
 }
 
-article fieldset {
-  border: none;
+.nav {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--c-dim);
+  display: flex;
+  gap: 18px;
+  align-items: center;
 }
 
-article button.random {
-  width: 40px;
-  height: 40px;
-  margin: 5px;
+.nav__est {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
 }
 
-article input[type='text'] {
-  margin: 5px 0;
-  width: 400px;
-  height: 44px;
-  font-size: 22pt;
+.nav__dot {
+  opacity: 0.4;
 }
 
-article input.submit {
-  font-size: 1.2em;
-  margin: 15px;
-  width: 200px;
-  height: 40px;
-  border-radius: 5px;
+.lang {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--c-dim);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
 }
 
-article ol {
-  width: 800px;
-  text-align: center;
-  list-style-position: inside;
+.lang--jp {
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', serif;
 }
 
-aside ul {
-  width: 800px;
-  text-align: center;
-  list-style: none;
+.lang--active {
+  font-weight: 600;
+  color: var(--c-ink);
+  border-bottom-color: var(--c-ink);
 }
 
-article ol li:first-of-type {
-  list-style-type: none;
+/* ---- Main ---- */
+main {
+  flex: 1;
 }
 
-article ol li {
-  font-size: 18pt;
-  padding-bottom: 32px;
-  background: url(/arrow.png) no-repeat center bottom;
+/* ---- Footer ---- */
+.footer {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--c-dim);
+  padding: 24px 64px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--c-rule);
 }
 
-article ol li:last-child {
-  background: none;
+.footer__nav {
+  display: flex;
+  align-items: center;
 }
 
-aside {
-  float: left;
-  width: 800px;
+.footer__nav a {
+  color: var(--c-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
 }
 
-section h2,
-aside h2 {
-  font-size: 14pt;
-  margin: 10px 0px;
+.footer__nav a:hover {
+  color: var(--c-ink);
+  text-decoration: none;
 }
 
-footer {
-  margin-top: 25px;
-  padding-top: 25px;
-  width: 800px;
-  text-align: center;
-  clear: both;
+.sep {
+  opacity: 0.4;
+  padding: 0 4px;
 }
 
-@media screen and (max-width: 480px) {
-  body {
-    width: auto;
-    padding: 20px;
+/* ---- Mobile ---- */
+@media (max-width: 640px) {
+  .header {
+    padding: 20px 18px 14px;
+    align-items: center;
   }
 
-  article input[type='text'] {
-    padding: auto;
-    width: auto;
+  .logo__word {
+    font-size: 22px;
   }
 
-  header,
-  footer,
-  aside,
-  article,
-  article ol,
-  aside ul {
-    width: 100%;
+  .logo__com {
+    font-size: 10px;
+    margin-left: 6px;
+  }
+
+  .logo__sub {
+    display: none;
+  }
+
+  .nav__est,
+  .nav__dot {
+    display: none;
+  }
+
+  .nav {
+    gap: 12px;
+  }
+
+  .footer {
+    padding: 20px 18px;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
   }
 }
 </style>

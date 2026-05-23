@@ -2,8 +2,10 @@ import { createI18n } from 'vue-i18n';
 
 const detectUserLanguage = (fallbackLanguage = 'en'): string => {
   const language: string = navigator.language;
-  if (language) {
-    return language.split('-')[0];
+  if (language.startsWith('ja')) {
+    return 'ja';
+  } else if (language.startsWith('en')) {
+    return 'en';
   }
   return fallbackLanguage;
 };
@@ -15,45 +17,88 @@ export const i18n = createI18n({
   messages: {
     en: {
       message: {
-        header: 'Find a route between any page in Wikipedia within 6 links',
+        header: 'Find a route between any two pages in Wikipedia within 6 links',
         search: 'Search',
         searchFrom: 'to',
         searchTo: '',
         buttonRandom: 'Select a random page',
-        searching: 'Searching route from "{wordFrom}" to "{wordTo}"',
-        searchResult: 'Search result of route from "{wordFrom}" to "{wordTo}" ({second} sec)',
+        searching: 'Searching for a route from "{wordFrom}" to "{wordTo}"',
+        searchResult: 'Route search result: "{wordFrom}" to "{wordTo}" ({second} sec)',
         searchInReverse: 'Search a route from "{wordTo}" to "{wordFrom}"',
-        tweet: 'Tweet (open new window)',
-        tweetFind: 'From {wordFrom} to {wordTo} can be reached in {length} links in Wikipedia.',
-        tweetNotFound: 'From {wordFrom} to {wordTo} can not be reached within 6 links in Wikipedia.',
+        share: 'Post on X (Twitter)',
+        shareFound: 'From {wordFrom} to {wordTo} can be reached in {length} links in Wikipedia.',
+        shareNotFound: 'From {wordFrom} to {wordTo} can not be reached within 6 links in Wikipedia.',
         wikipediaUrl: 'https://en.wikipedia.org/wiki/{word}',
       },
       error: {
-        notFoundFrom: 'The page "{from}" does not exists.',
-        notFoundTo: 'The page "{to}" does not exists.',
+        notFoundFrom: 'The page "{from}" does not exist.',
+        notFoundTo: 'The page "{to}" does not exist.',
         notFoundRoute: "I can't find a route within 6 links...",
       },
+      nav: {
+        est: 'Est. 2011',
+        home: 'Home',
+        about: 'About',
+        source: 'Source',
+      },
+      home: {
+        tagline: 'The Wikipedia Route Finder · Since 2011',
+        hero: 'Find a route between any two{break}Wikipedia pages, in {em}',
+        heroEm: '6 links or fewer.',
+        subtitle: "Type two article titles below — or roll the dice. We'll trace the shortest chain of hyperlinks between them.",
+        catalogTitle: 'Catalog Lookup',
+        fieldFrom: 'From',
+        fieldTo: 'To',
+        placeholder: 'Article title',
+        random: 'Random',
+        cta: 'Trace Route →',
+        statsArticles: '{count} articles indexed',
+      },
+      search: {
+        loading: 'Tracing route…',
+        routeFound: 'Catalog Entry · Route Found',
+        noRoute: 'Catalog Entry · No Route',
+        origin: 'Origin',
+        destination: 'Destination',
+        step: 'Step {num}',
+        noticeTitle: 'Catalog Notice',
+        reverseRoute: '← Reverse Route',
+        newSearch: 'New Search',
+        newSearchBack: '← New Search',
+        tryReverse: '↻ Try reverse',
+        notFoundBody: 'No chain of {em} connects these two articles.',
+        notFoundBodyEm: 'six links or fewer',
+        notFoundNote:
+          'This usually means one of the titles is misspelled, or the goal article is a very isolated entry. PediaRoute caps the search at 6 hops on principle — longer chains tend to wander aimlessly across the encyclopedia.',
+      },
+      stamp: {
+        found: 'FOUND',
+        notFound: 'NO ROUTE',
+      },
       about: {
+        colophon: 'Colophon',
+        heading: 'About PediaRoute.',
+        lead: 'A small project that has quietly traced Wikipedia.',
+        authorBio: 'Designed, built, and maintained since 2011 by {handle}.',
         header: 'About PediaRoute',
         sixDegree: 'Six degrees of separation',
         sixDegreeUrl: 'https://en.wikipedia.org/wiki/Six_degrees_of_separation',
-        first: 'There are millions of pages on Wikipedia. ' + 'Do you hear about it is possible to arrive from any page to any page within 6 clicks?',
-        second: ' of Wikipedia.',
-        third:
+        sixDegreeIntro:
+          "There are millions of pages on Wikipedia. Have you heard about that it's possible to reach any page from any other page within 6 clicks?",
+        sixDegreeSuffix: ' of Wikipedia.',
+        routeDescription:
           'This site uses all titles and links between any two pages in Wikipedia and searches whether the shortest route can be traced from both the start and goal pages.',
-        fourth: 'For detail, see ',
         sourceCode: 'Source code',
-        fifth: '.',
-        sixth: 'This site uses ',
+        databasePrefix: 'This site uses ',
         database: 'Database of Wikipedia',
         databaseUrl: 'https://en.wikipedia.org/wiki/Wikipedia:Database_download',
-        seventh: '.',
-        eighth: 'You can use the data of this site under ',
-        commons: 'CC BY-SA 3.0',
-        commonsUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed',
-        ninth: '.',
+        databaseSuffix: '.',
+        licensePrefix: 'You can use the data of this site under ',
+        commons: 'CC BY-SA 4.0',
+        commonsUrl: 'https://creativecommons.org/licenses/by-sa/4.0/deed',
+        licenseSuffix: '.',
         findingRoute: 'Route finding',
-        data: 'Data using on this site',
+        data: 'Data used on this site',
         author: 'Author',
       },
     },
@@ -67,9 +112,9 @@ export const i18n = createI18n({
         searching: '「{wordFrom}」から「{wordTo}」へのルートを検索中',
         searchResult: '「{wordFrom}」から「{wordTo}」へのリンクの検索結果 (実行時間 {second} sec)',
         searchInReverse: '「{wordTo}」から「{wordFrom}」を検索する',
-        tweet: '結果をTwitterにつぶやく (別ウィンドウで開きます)',
-        tweetFind: '「{wordFrom}」から「{wordTo}」へはWikipediaで{length}リンクで行けるよ！',
-        tweetNotFound: '「{wordFrom}」から「{wordTo}」へはWikipediaで6回のリンクじゃいけないみたい…',
+        share: '結果をX(旧Twitter)でつぶやく',
+        shareFound: '「{wordFrom}」から「{wordTo}」へはWikipediaで{length}リンクで行けるよ！',
+        shareNotFound: '「{wordFrom}」から「{wordTo}」へはWikipediaで6回のリンクじゃいけないみたい…',
         wikipediaUrl: 'https://ja.wikipedia.org/wiki/{word}',
       },
       error: {
@@ -77,28 +122,71 @@ export const i18n = createI18n({
         notFoundTo: '"{to}"というページがないみたい',
         notFoundRoute: '6回のリンクじゃ見つからなかった…ごめんね！',
       },
+      nav: {
+        est: '2011年創設',
+        home: 'トップ',
+        about: 'このサイトについて',
+        source: 'ソースコード',
+      },
+      home: {
+        tagline: 'ウィキペディア経路探索 ・ 2011年から',
+        hero: 'ウィキペディアの二つの記事を、{break}{em}結ぶ。',
+        heroEm: '６つのリンクで',
+        subtitle:
+          '２つの記事名を入力してください。またはサイコロを振って任意の記事を選んでも構いません。記事から記事へ、ハイパーリンクの最短経路をたどります。',
+        catalogTitle: '蔵 書 照 会',
+        fieldFrom: '出 発 点',
+        fieldTo: '到 着 点',
+        placeholder: '記事名を入力',
+        random: 'ランダム',
+        cta: '経 路 を 探 す →',
+        statsArticles: '対象 {count} ページ',
+      },
+      search: {
+        loading: '経路を探しています...',
+        routeFound: '蔵書照会 ・ 経路あり',
+        noRoute: '蔵書照会 ・ 経路なし',
+        origin: '出 発 点',
+        destination: '到 着 点',
+        step: '第 {num} 歩',
+        noticeTitle: '蔵 書 通 知',
+        reverseRoute: '← 逆 経 路',
+        newSearch: '新しく探す',
+        newSearchBack: '← 新しく探す',
+        tryReverse: '逆方向を試す',
+        notFoundBody: 'この二つの記事を{em}で結ぶ経路は見つかりませんでした。',
+        notFoundBodyEm: '６リンク以内',
+        notFoundNote:
+          '記事名の表記揺れか、もしくは到着点が他から孤立した記事である可能性があります。PediaRoute は信念をもって探索を６歩までに留めています — それ以上長い経路は、百科事典を当てもなくさまようことになるため。',
+      },
+      stamp: {
+        found: '発 見',
+        notFound: '未 到 達',
+      },
       about: {
+        colophon: '奥 付',
+        heading: 'このサイトについて',
+        lead: '静かにウィキペディアを辿りつづける小さなプロジェクト。',
+        authorBio: '2011年より、{handle}が設計・開発・運用しています。',
         header: 'PediaRouteについて',
         sixDegree: '六次の隔たり',
         sixDegreeUrl: 'https://ja.wikipedia.org/wiki/%E5%85%AD%E6%AC%A1%E3%81%AE%E9%9A%94%E3%81%9F%E3%82%8A',
-        first:
+        sixDegreeIntro:
           'Wikipedia上には日本語版だけで数百万ものページがありますが、' +
           'その中のどんな2つのページを選んでも最大6回のページ内のリンクをたどれば到達できる（らしい）というのが2011年8月ごろにネットで話題になりました。',
-        second: 'のWikipedia版ですね。',
-        third:
+        sixDegreeSuffix: 'のWikipedia版ですね。',
+        routeDescription:
           'このサイトはWikipedia内の全ページのタイトルおよびページ間のリンクを使い、スタートとゴールのページの双方向からリンクをたどれるか検索を行い、最短で見つかったリンクの経路を表示します。',
-        fourth: '詳しいアルゴリズムに知りたい方は',
         sourceCode: 'ソースコード',
-        fifth: 'を参照してください。',
-        sixth: 'このサイトでは',
+        databasePrefix: 'このサイトでは',
         database: 'Wikipediaのデータベース',
         databaseUrl:
           'https://ja.wikipedia.org/wiki/Wikipedia:%E3%83%87%E3%83%BC%E3%82%BF%E3%83%99%E3%83%BC%E3%82%B9%E3%83%80%E3%82%A6%E3%83%B3%E3%83%AD%E3%83%BC%E3%83%89',
-        seventh: 'からページ情報とページ間のリンク情報を取得し、利用しています。',
-        eighth: 'このサイトの情報は',
-        commons: 'クリエイティブ・コモンズ 表示-継承 3.0 非移植ライセンス',
-        commonsUrl: 'https://creativecommons.org/licenses/by-sa/3.0/deed.ja',
-        ninth: 'の下で利用可能です。',
+        databaseSuffix: 'からページ情報とページ間のリンク情報を取得し、利用しています。',
+        licensePrefix: 'このサイトの情報は',
+        commons: 'クリエイティブ・コモンズ 表示-継承 4.0 非移植ライセンス',
+        commonsUrl: 'https://creativecommons.org/licenses/by-sa/4.0/deed.ja',
+        licenseSuffix: 'の下で利用可能です。',
         findingRoute: '経路検索について',
         data: '使用しているデータについて',
         author: '作者について',

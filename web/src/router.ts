@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteLocationNormalized } from 'vue-router';
+import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router';
 import { i18n } from './i18n';
 import About from './views/About.vue';
 import Home from './views/Home.vue';

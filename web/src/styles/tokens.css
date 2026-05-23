@@ -1,0 +1,28 @@
+:root {
+  --c-bg: #f1ead7;
+  --c-paper: #faf5e6;
+  --c-ink: #1c1b18;
+  --c-dim: #6b6557;
+  --c-rule: rgba(28, 27, 24, 0.14);
+  --c-accent: #8a3324;
+
+  /* Primitive font stacks */
+  --f-serif-en: 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif', Georgia, serif;
+  --f-serif-ja: 'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', serif;
+  --f-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Roboto Mono', monospace;
+
+  /* Semantic tokens (default: English) */
+  --f-body: var(--f-serif-en);
+  --f-head: var(--f-serif-en);
+  --ui-font: var(--f-mono); /* UI labels: mono in EN, body in JA */
+  --cta-font: var(--f-mono); /* CTA buttons: mono in EN, head in JA */
+  --ui-tt: uppercase; /* text-transform: none in JA */
+}
+
+html.lang-ja {
+  --f-body: var(--f-serif-ja);
+  --f-head: var(--f-serif-ja);
+  --ui-font: var(--f-body);
+  --cta-font: var(--f-head);
+  --ui-tt: none;
+}
