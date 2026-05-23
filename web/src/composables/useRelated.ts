@@ -4,15 +4,16 @@ import type { Ref } from 'vue';
 const cache = new Map<string, string[]>();
 
 export function useRelated(locale: Ref<string>) {
-  const suggestions = ref<string[]>([]);
+  const suggestions = ref<string[] | undefined>(undefined);
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const fetch = (word: string) => {
     if (timer) clearTimeout(timer);
     if ([...word].length < 2) {
-      suggestions.value = [];
+      suggestions.value = undefined;
       return;
     }
+    suggestions.value = undefined;
     const key = `${locale.value}:${word}`;
     const cached = cache.get(key);
     if (cached !== undefined) {
@@ -32,7 +33,7 @@ export function useRelated(locale: Ref<string>) {
   };
 
   const clear = () => {
-    suggestions.value = [];
+    suggestions.value = undefined;
   };
 
   onUnmounted(() => {
