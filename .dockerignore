@@ -1,9 +1,9 @@
 .idea
+.git
 *.dat
-en/
-ja/
 build
 vendor
 web/dist
 web/node_modules
 web/.parcel-cache
+*.gz
