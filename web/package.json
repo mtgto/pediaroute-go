@@ -2,6 +2,7 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "serve": "vite",
     "build": "pnpm run clean && vite build",
@@ -17,8 +18,10 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@types/node": "^18.16.19",
+    "@tsconfig/node24": "^24.0.4",
+    "@types/node": "^24.1.0",
     "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
     "oxfmt": "latest",
     "oxlint": "latest",
     "rimraf": "^6.1.3",

@@ -18,10 +18,12 @@
 
 # dep
 vendor/
+.pnpm-store/
 
 # Project files, like IntelliJ IDEA, VisualStudio Code, etc.
 .idea/
 *.iml
+.vscode/
 
 # Application
 cmd/web/assets/
