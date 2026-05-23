@@ -36,5 +36,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: vet
+        run: mkdir -p cmd/web/assets && touch cmd/web/assets/dummy.txt && go vet ./...
       - name: test
         run: make test
