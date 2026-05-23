@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"github.com/mtgto/pediaroute-go/internal/app/core"
@@ -208,26 +209,24 @@ func (w *Wikipedia) search(start, goal *map[uint32]struct{}, depth int) ([]uint3
 }
 
 func (w *Wikipedia) forwardLinks(page core.Page) ([]uint32, error) {
-	links := make([]uint32, page.ForwardLinkLength, page.ForwardLinkLength)
-	_, err := w.linkFile.Seek(int64(page.ForwardLinkIndex)*4, 0)
-	if err != nil {
+	links := make([]uint32, page.ForwardLinkLength)
+	buf := make([]byte, int(page.ForwardLinkLength)*4)
+	if _, err := w.linkFile.ReadAt(buf, int64(page.ForwardLinkIndex)*4); err != nil {
 		return nil, err
 	}
-	err = binary.Read(w.linkFile, binary.LittleEndian, links)
-	if err != nil {
+	if err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &links); err != nil {
 		return nil, err
 	}
 	return links, nil
 }
 
 func (w *Wikipedia) backwardLinks(page core.Page) ([]uint32, error) {
-	links := make([]uint32, page.BackwardLinkLength, page.BackwardLinkLength)
-	_, err := w.linkFile.Seek(int64(page.BackwardLinkIndex)*4, 0)
-	if err != nil {
+	links := make([]uint32, page.BackwardLinkLength)
+	buf := make([]byte, int(page.BackwardLinkLength)*4)
+	if _, err := w.linkFile.ReadAt(buf, int64(page.BackwardLinkIndex)*4); err != nil {
 		return nil, err
 	}
-	err = binary.Read(w.linkFile, binary.LittleEndian, links)
-	if err != nil {
+	if err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &links); err != nil {
 		return nil, err
 	}
 	return links, nil
