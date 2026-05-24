@@ -60,6 +60,18 @@
           </div>
         </template>
 
+        <!-- Server error -->
+        <template v-else-if="errorCode === ErrorCode.ServerError">
+          <Notice :body-large="true" :error-code="ErrorCode.ServerError">
+            <template #header-title>{{ t('search.noticeTitle') }}</template>
+          </Notice>
+          <div class="actions">
+            <Button :as="RouterLink" variant="primary" to="/">
+              {{ t('search.newSearchBack') }}
+            </Button>
+          </div>
+        </template>
+
         <!-- Route not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundRoute">
           <Notice :body-large="true">
@@ -98,19 +110,12 @@ import Button from '../components/Button.vue';
 import Notice from '../components/Notice.vue';
 import RouteList from '../components/RouteList.vue';
 import Stamp from '../components/Stamp.vue';
+import { ErrorCode, type ErrorCodeType } from '../types';
 
 const props = defineProps<{
   wordFrom: string;
   wordTo: string;
 }>();
-
-const ErrorCode = {
-  NoError: 0,
-  NotFoundFrom: 1,
-  NotFoundTo: 2,
-  NotFoundRoute: 3,
-} as const;
-type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 interface Result {
   readonly route: ReadonlyArray<string> | undefined;
@@ -141,16 +146,22 @@ const doSearch = async () => {
   const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
   const start = Date.now();
   return fetch(`/api/search?lang=${encodeURI(locale.value)}`, { method: 'POST', body, headers })
-    .then((r) => r.json())
-    .then((result: Result) => {
-      errorCode.value = result.error;
-      routes.value = result.route;
-      if (result.error === ErrorCode.NotFoundFrom) {
-        failureReason.value = t('error.notFoundFrom', { from: props.wordFrom });
-      } else if (result.error === ErrorCode.NotFoundTo) {
-        failureReason.value = t('error.notFoundTo', { to: props.wordTo });
+    .then((r) => {
+      if (r.status >= 500) {
+        errorCode.value = ErrorCode.ServerError;
+        time.value = Date.now() - start;
+        return;
       }
-      time.value = Date.now() - start;
+      return r.json().then((result: Result) => {
+        errorCode.value = result.error;
+        routes.value = result.route;
+        if (result.error === ErrorCode.NotFoundFrom) {
+          failureReason.value = t('error.notFoundFrom', { from: props.wordFrom });
+        } else if (result.error === ErrorCode.NotFoundTo) {
+          failureReason.value = t('error.notFoundTo', { to: props.wordTo });
+        }
+        time.value = Date.now() - start;
+      });
     })
     .finally(() => {
       isLoading.value = false;

@@ -5,7 +5,14 @@
       <span class="num">{{ num }}</span>
     </div>
     <p :class="['body', bodyLarge && 'body--large']">
-      <slot name="body" />
+      <template v-if="errorCode === ErrorCode.ServerError">
+        <i18n-t keypath="search.serverError">
+          <template #em
+            ><em class="notice-em">{{ t('search.serverErrorEm') }}</em></template
+          >
+        </i18n-t>
+      </template>
+      <slot v-else name="body" />
     </p>
     <p v-if="$slots.note" class="note">
       <slot name="note" />
@@ -14,10 +21,16 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+import { ErrorCode, type ErrorCodeType } from '../types';
+
+const { t } = useI18n();
+
 withDefaults(
   defineProps<{
     num?: string;
     bodyLarge?: boolean;
+    errorCode?: ErrorCodeType;
   }>(),
   { num: '№ 0001 · v', bodyLarge: false },
 );
@@ -89,6 +102,10 @@ html.lang-ja .body--large {
 html.lang-ja .note {
   font-size: 14px;
   line-height: 1.9;
+}
+
+.notice-em {
+  color: var(--c-accent);
 }
 
 @media (max-width: 640px) {
