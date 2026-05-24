@@ -49,10 +49,17 @@
 
         <!-- Article not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundFrom || errorCode === ErrorCode.NotFoundTo">
-          <Notice>
-            <template #header-title>{{ t('search.noticeTitle') }}</template>
-            <template #body>{{ failureReason }}</template>
-          </Notice>
+          <p class="failure-reason">{{ failureReason }}</p>
+          <div class="actions">
+            <Button :as="RouterLink" variant="primary" to="/">
+              {{ t('search.newSearchBack') }}
+            </Button>
+          </div>
+        </template>
+
+        <!-- Server error -->
+        <template v-else-if="errorCode === ErrorCode.ServerError">
+          <SearchErrorNotice :error-code="ErrorCode.ServerError" />
           <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
@@ -62,17 +69,7 @@
 
         <!-- Route not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundRoute">
-          <Notice :body-large="true">
-            <template #header-title>{{ t('search.noticeTitle') }}</template>
-            <template #body>
-              <i18n-t keypath="search.notFoundBody">
-                <template #em
-                  ><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template
-                >
-              </i18n-t>
-            </template>
-            <template #note>{{ t('search.notFoundNote') }}</template>
-          </Notice>
+          <SearchErrorNotice :error-code="ErrorCode.NotFoundRoute" />
           <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
@@ -95,22 +92,15 @@ import { ref, onMounted, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import Button from '../components/Button.vue';
-import Notice from '../components/Notice.vue';
+import SearchErrorNotice from '../components/SearchErrorNotice.vue';
 import RouteList from '../components/RouteList.vue';
 import Stamp from '../components/Stamp.vue';
+import { ErrorCode, type ErrorCodeType } from '../types';
 
 const props = defineProps<{
   wordFrom: string;
   wordTo: string;
 }>();
-
-const ErrorCode = {
-  NoError: 0,
-  NotFoundFrom: 1,
-  NotFoundTo: 2,
-  NotFoundRoute: 3,
-} as const;
-type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
 
 interface Result {
   readonly route: ReadonlyArray<string> | undefined;
@@ -141,15 +131,25 @@ const doSearch = async () => {
   const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
   const start = Date.now();
   return fetch(`/api/search?lang=${encodeURI(locale.value)}`, { method: 'POST', body, headers })
-    .then((r) => r.json())
-    .then((result: Result) => {
-      errorCode.value = result.error;
-      routes.value = result.route;
-      if (result.error === ErrorCode.NotFoundFrom) {
-        failureReason.value = t('error.notFoundFrom', { from: props.wordFrom });
-      } else if (result.error === ErrorCode.NotFoundTo) {
-        failureReason.value = t('error.notFoundTo', { to: props.wordTo });
+    .then((r) => {
+      if (r.status >= 500) {
+        errorCode.value = ErrorCode.ServerError;
+        time.value = Date.now() - start;
+        return;
       }
+      return r.json().then((result: Result) => {
+        errorCode.value = result.error;
+        routes.value = result.route;
+        if (result.error === ErrorCode.NotFoundFrom) {
+          failureReason.value = t('error.notFoundFrom', { from: props.wordFrom });
+        } else if (result.error === ErrorCode.NotFoundTo) {
+          failureReason.value = t('error.notFoundTo', { to: props.wordTo });
+        }
+        time.value = Date.now() - start;
+      });
+    })
+    .catch(() => {
+      errorCode.value = ErrorCode.ServerError;
       time.value = Date.now() - start;
     })
     .finally(() => {
@@ -274,9 +274,12 @@ html.lang-ja .result-label {
   flex-wrap: wrap;
 }
 
-/* Accent emphasis inside notice body slot */
-.notice-em {
-  color: var(--c-accent);
+.failure-reason {
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--c-ink);
+  margin-bottom: 36px;
 }
 
 /* Mobile */
