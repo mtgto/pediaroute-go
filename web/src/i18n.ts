@@ -68,8 +68,7 @@ export const i18n = createI18n({
         tryReverse: '↻ Try reverse',
         notFoundBody: 'No chain of {em} connects these two articles.',
         notFoundBodyEm: 'six links or fewer',
-        serverError: 'A {em} occurred. Please try again later.',
-        serverErrorEm: 'server error',
+        serverError: 'A server error occurred. Please try again later.',
         notFoundNote:
           'This usually means one of the titles is misspelled, or the goal article is a very isolated entry. PediaRoute caps the search at 6 hops on principle — longer chains tend to wander aimlessly across the encyclopedia.',
       },
@@ -158,8 +157,7 @@ export const i18n = createI18n({
         tryReverse: '逆方向を試す',
         notFoundBody: 'この二つの記事を{em}で結ぶ経路は見つかりませんでした。',
         notFoundBodyEm: '６リンク以内',
-        serverError: '{em}が発生しました。しばらく時間をおいてからお試しください。',
-        serverErrorEm: 'サーバーエラー',
+        serverError: 'サーバーエラーが発生しました。しばらく時間をおいてからお試しください。',
         notFoundNote:
           '記事名の表記揺れか、もしくは到着点が他から孤立した記事である可能性があります。PediaRoute は信念をもって探索を６歩までに留めています — それ以上長い経路は、百科事典を当てもなくさまようことになるため。',
       },

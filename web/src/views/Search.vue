@@ -59,7 +59,7 @@
 
         <!-- Server error -->
         <template v-else-if="errorCode === ErrorCode.ServerError">
-          <Notice :error-code="ErrorCode.ServerError" />
+          <SearchErrorNotice :error-code="ErrorCode.ServerError" />
           <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
@@ -69,7 +69,7 @@
 
         <!-- Route not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundRoute">
-          <Notice :error-code="ErrorCode.NotFoundRoute" />
+          <SearchErrorNotice :error-code="ErrorCode.NotFoundRoute" />
           <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
@@ -92,7 +92,7 @@ import { ref, onMounted, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import Button from '../components/Button.vue';
-import Notice from '../components/Notice.vue';
+import SearchErrorNotice from '../components/SearchErrorNotice.vue';
 import RouteList from '../components/RouteList.vue';
 import Stamp from '../components/Stamp.vue';
 import { ErrorCode, type ErrorCodeType } from '../types';
@@ -147,6 +147,10 @@ const doSearch = async () => {
         }
         time.value = Date.now() - start;
       });
+    })
+    .catch(() => {
+      errorCode.value = ErrorCode.ServerError;
+      time.value = Date.now() - start;
     })
     .finally(() => {
       isLoading.value = false;

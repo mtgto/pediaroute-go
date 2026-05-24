@@ -6,11 +6,7 @@
     </div>
     <p class="body body--large">
       <template v-if="errorCode === ErrorCode.ServerError">
-        <i18n-t keypath="search.serverError">
-          <template #em
-            ><em class="notice-em">{{ t('search.serverErrorEm') }}</em></template
-          >
-        </i18n-t>
+        {{ t('search.serverError') }}
       </template>
       <template v-else>
         <i18n-t keypath="search.notFoundBody">
