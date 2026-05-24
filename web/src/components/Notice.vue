@@ -1,10 +1,10 @@
 <template>
   <div class="notice">
     <div class="header">
-      <slot name="header-title" />
+      <span>{{ t('search.noticeTitle') }}</span>
       <span class="num">{{ num }}</span>
     </div>
-    <p :class="['body', bodyLarge && 'body--large']">
+    <p class="body body--large">
       <template v-if="errorCode === ErrorCode.ServerError">
         <i18n-t keypath="search.serverError">
           <template #em
@@ -12,27 +12,32 @@
           >
         </i18n-t>
       </template>
-      <slot v-else name="body" />
+      <template v-else>
+        <i18n-t keypath="search.notFoundBody">
+          <template #em
+            ><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template
+          >
+        </i18n-t>
+      </template>
     </p>
-    <p v-if="$slots.note" class="note">
-      <slot name="note" />
+    <p v-if="errorCode === ErrorCode.NotFoundRoute" class="note">
+      {{ t('search.notFoundNote') }}
     </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { ErrorCode, type ErrorCodeType } from '../types';
+import { ErrorCode } from '../types';
 
 const { t } = useI18n();
 
 withDefaults(
   defineProps<{
     num?: string;
-    bodyLarge?: boolean;
-    errorCode?: ErrorCodeType;
+    errorCode: typeof ErrorCode.NotFoundRoute | typeof ErrorCode.ServerError;
   }>(),
-  { num: '№ 0001 · v', bodyLarge: false },
+  { num: '№ 0001 · v' },
 );
 </script>
 

@@ -49,10 +49,7 @@
 
         <!-- Article not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundFrom || errorCode === ErrorCode.NotFoundTo">
-          <Notice>
-            <template #header-title>{{ t('search.noticeTitle') }}</template>
-            <template #body>{{ failureReason }}</template>
-          </Notice>
+          <p class="failure-reason">{{ failureReason }}</p>
           <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
@@ -62,9 +59,7 @@
 
         <!-- Server error -->
         <template v-else-if="errorCode === ErrorCode.ServerError">
-          <Notice :body-large="true" :error-code="ErrorCode.ServerError">
-            <template #header-title>{{ t('search.noticeTitle') }}</template>
-          </Notice>
+          <Notice :error-code="ErrorCode.ServerError" />
           <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
@@ -74,17 +69,7 @@
 
         <!-- Route not found -->
         <template v-else-if="errorCode === ErrorCode.NotFoundRoute">
-          <Notice :body-large="true">
-            <template #header-title>{{ t('search.noticeTitle') }}</template>
-            <template #body>
-              <i18n-t keypath="search.notFoundBody">
-                <template #em
-                  ><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template
-                >
-              </i18n-t>
-            </template>
-            <template #note>{{ t('search.notFoundNote') }}</template>
-          </Notice>
+          <Notice :error-code="ErrorCode.NotFoundRoute" />
           <div class="actions">
             <Button :as="RouterLink" variant="primary" to="/">
               {{ t('search.newSearchBack') }}
@@ -285,9 +270,12 @@ html.lang-ja .result-label {
   flex-wrap: wrap;
 }
 
-/* Accent emphasis inside notice body slot */
-.notice-em {
-  color: var(--c-accent);
+.failure-reason {
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--c-ink);
+  margin-bottom: 36px;
 }
 
 /* Mobile */
