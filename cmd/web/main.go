@@ -138,6 +138,9 @@ func main() {
 					}
 				}
 				err = json.NewEncoder(w).Encode(result)
+				if err != nil {
+					log.Printf("Error while encoding json: %v\n", err)
+				}
 			} else {
 				http.Error(w, "Not Found", http.StatusNotFound)
 			}
