@@ -4,21 +4,18 @@ import (
 	"embed"
 	"encoding/json"
 	"flag"
-	"github.com/mtgto/pediaroute-go/internal/app/core"
-	"github.com/mtgto/pediaroute-go/internal/app/web"
 	"io/fs"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
-	"time"
+
+	"github.com/mtgto/pediaroute-go/internal/app/core"
+	"github.com/mtgto/pediaroute-go/internal/app/web"
 )
 
-/**
- * Error code of API
- */
+// Error code of API
 const (
 	NoError = iota
 	NotFoundFrom
@@ -30,7 +27,6 @@ const (
 var assets embed.FS
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	wikipedias := make(map[string]web.Wikipedia)
 
@@ -54,9 +50,9 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to load language file: %v", err)
 		}
-		pageFile := path.Join(path.Dir(langFile), language.PageFile)
-		titleFile := path.Join(path.Dir(langFile), language.TitleFile)
-		linkFile := path.Join(path.Dir(langFile), language.LinkFile)
+		pageFile := filepath.Join(filepath.Dir(langFile), language.PageFile)
+		titleFile := filepath.Join(filepath.Dir(langFile), language.TitleFile)
+		linkFile := filepath.Join(filepath.Dir(langFile), language.LinkFile)
 		log.Printf("Start loading for language %v\n", language.Id)
 		wikipedia, err := web.Load(language.PageCount, pageFile, titleFile, linkFile)
 		if err != nil {
@@ -127,18 +123,18 @@ func main() {
 				}
 				w.Header().Set("Content-Type", "application/json")
 				if !wikipedia.IsWordExists(pair.From) {
-					result = SearchResult{nil, NotFoundFrom}
+					result = SearchResult{Route: nil, Error: NotFoundFrom}
 				} else if !wikipedia.IsWordExists(pair.To) {
-					result = SearchResult{nil, NotFoundTo}
+					result = SearchResult{Route: nil, Error: NotFoundTo}
 				} else {
 					log.Printf("Language: %v, Search from \"%v\" to \"%v\"\n", lang, pair.From, pair.To)
 					route := wikipedia.Search(pair.From, pair.To)
 					if route != nil {
 						log.Printf("Found a route: %v\n", route)
-						result = SearchResult{route, NoError}
+						result = SearchResult{Route: route, Error: NoError}
 					} else {
 						log.Printf("Not found a route from \"%v\" to \"%v\"\n", pair.From, pair.To)
-						result = SearchResult{nil, NotFoundRoute}
+						result = SearchResult{Route: nil, Error: NotFoundRoute}
 					}
 				}
 				err = json.NewEncoder(w).Encode(result)
@@ -209,9 +205,4 @@ func printMemory() {
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
 	log.Printf("Memory: %+v", mem.HeapAlloc)
-}
-
-func isFileExists(file string) bool {
-	_, err := os.Stat(file)
-	return err == nil
 }
