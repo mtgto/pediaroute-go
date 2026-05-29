@@ -7,7 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/mtgto/pediaroute-go/internal/app/core"
@@ -78,12 +78,13 @@ func (w *Wikipedia) GetRandomPage() (string, error) {
 
 func (w *Wikipedia) RelatedPages(word string, limit int) ([]string, error) {
 	lowerWord := strings.ToLower(word)
-	index := sort.Search(len(w.pages), func(i int) bool {
-		t, err := w.title(w.pages[i])
+	index, _ := slices.BinarySearchFunc(w.pages, lowerWord, func(p core.Page, target string) int {
+		t, err := w.title(p)
 		if err != nil {
 			log.Printf("Error while RelatedPages: %v", err)
+			return -1
 		}
-		return strings.ToLower(t) >= lowerWord
+		return strings.Compare(strings.ToLower(t), target)
 	})
 	results := make([]string, 0, limit)
 	for i := index; i < len(w.pages) && len(results) < limit; i++ {
@@ -103,12 +104,13 @@ func (w *Wikipedia) RelatedPages(word string, limit int) ([]string, error) {
 func (w *Wikipedia) generateWordSet(word string) map[uint32]struct{} {
 	lowercaseWord := strings.ToLower(word)
 	set := make(map[uint32]struct{})
-	index := sort.Search(len(w.pages), func(i int) bool {
-		title, err := w.title(w.pages[i])
+	index, _ := slices.BinarySearchFunc(w.pages, lowercaseWord, func(p core.Page, target string) int {
+		title, err := w.title(p)
 		if err != nil {
 			log.Printf("Error while generateWordSet: %v", err)
+			return -1
 		}
-		return strings.ToLower(title) >= lowercaseWord
+		return strings.Compare(strings.ToLower(title), target)
 	})
 	if index == len(w.pages) {
 		return set

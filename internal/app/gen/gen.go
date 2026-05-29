@@ -11,7 +11,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -50,13 +50,15 @@ func buildIndex[K cmp.Ordered](pages []page, keyFn func(page) K) []indexEntry[K]
 	for i, p := range pages {
 		idx[i] = indexEntry[K]{key: keyFn(p), index: uint32(i)}
 	}
-	sort.Slice(idx, func(i, j int) bool { return idx[i].key < idx[j].key })
+	slices.SortFunc(idx, func(a, b indexEntry[K]) int { return cmp.Compare(a.key, b.key) })
 	return idx
 }
 
 func lookupIndex[K cmp.Ordered](idx []indexEntry[K], key K) (uint32, bool) {
-	i := sort.Search(len(idx), func(k int) bool { return idx[k].key >= key })
-	if i < len(idx) && idx[i].key == key {
+	i, found := slices.BinarySearchFunc(idx, key, func(e indexEntry[K], k K) int {
+		return cmp.Compare(e.key, k)
+	})
+	if found {
 		return idx[i].index, true
 	}
 	return 0, false
@@ -191,15 +193,18 @@ func loadPages(in string) []page {
 		}
 	}
 	// Pre-compute lowercase once; O(N log N) comparisons would each allocate otherwise.
-	tmp := make([]struct {
+	type pageWithLower struct {
 		p     page
 		lower string
-	}, len(allPages))
+	}
+	tmp := make([]pageWithLower, len(allPages))
 	for i, p := range allPages {
 		tmp[i].p = p
 		tmp[i].lower = strings.ToLower(p.title)
 	}
-	sort.Slice(tmp, func(i, j int) bool { return tmp[i].lower < tmp[j].lower })
+	slices.SortFunc(tmp, func(a, b pageWithLower) int {
+		return cmp.Compare(a.lower, b.lower)
+	})
 	for i, t := range tmp {
 		allPages[i] = t.p
 	}
@@ -479,11 +484,11 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 	defer fp.Close()
 	linkWriter := bufio.NewWriterSize(fp, 4*1024*1024)
 
-	sort.Slice(pairs, func(i, j int) bool {
-		if pairs[i].from != pairs[j].from {
-			return pairs[i].from < pairs[j].from
+	slices.SortFunc(pairs, func(a, b linkPair) int {
+		if a.from != b.from {
+			return cmp.Compare(a.from, b.from)
 		}
-		return pairs[i].to < pairs[j].to
+		return cmp.Compare(a.to, b.to)
 	})
 
 	var linkIndex uint32
@@ -502,11 +507,11 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 		i = j
 	}
 
-	sort.Slice(pairs, func(i, j int) bool {
-		if pairs[i].to != pairs[j].to {
-			return pairs[i].to < pairs[j].to
+	slices.SortFunc(pairs, func(a, b linkPair) int {
+		if a.to != b.to {
+			return cmp.Compare(a.to, b.to)
 		}
-		return pairs[i].from < pairs[j].from
+		return cmp.Compare(a.from, b.from)
 	})
 
 	for i := 0; i < len(pairs); {
