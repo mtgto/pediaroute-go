@@ -38,5 +38,7 @@ jobs:
             ${{ runner.os }}-go-
       - name: vet
         run: mkdir -p cmd/web/assets && touch cmd/web/assets/dummy.txt && go vet ./...
+      - name: staticcheck
+        run: go tool staticcheck ./...
       - name: test
         run: make test

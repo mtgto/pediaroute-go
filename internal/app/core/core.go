@@ -4,11 +4,10 @@ import (
 	"bufio"
 	"encoding/binary"
 	"encoding/json"
-	"log"
 	"os"
 )
 
-// WikipediaFiles defines JSON structure for data set of language.
+// Language defines JSON structure for data set of wikipediaPages.
 type Language struct {
 	Id        string `json:"id"`
 	PageCount uint32 `json:"page_count"`
@@ -38,37 +37,9 @@ func LoadPages(pageCount uint32, in string) []Page {
 	defer file.Close()
 	reader := bufio.NewReader(file)
 	pages := make([]Page, 0, pageCount)
-	for i := 0; uint32(i) < pageCount; i += 1 {
+	for i := 0; uint32(i) < pageCount; i++ {
 		page := Page{}
-		err := binary.Read(reader, binary.LittleEndian, &page.Id)
-		if err != nil {
-			panic(err)
-		}
-		err = binary.Read(reader, binary.LittleEndian, &page.TitleOffset)
-		if err != nil {
-			panic(err)
-		}
-		err = binary.Read(reader, binary.LittleEndian, &page.TitleLength)
-		if err != nil {
-			panic(err)
-		}
-		err = binary.Read(reader, binary.LittleEndian, &page.IsRedirect)
-		if err != nil {
-			panic(err)
-		}
-		err = binary.Read(reader, binary.LittleEndian, &page.ForwardLinkIndex)
-		if err != nil {
-			panic(err)
-		}
-		err = binary.Read(reader, binary.LittleEndian, &page.ForwardLinkLength)
-		if err != nil {
-			panic(err)
-		}
-		err = binary.Read(reader, binary.LittleEndian, &page.BackwardLinkIndex)
-		if err != nil {
-			panic(err)
-		}
-		err = binary.Read(reader, binary.LittleEndian, &page.BackwardLinkLength)
+		err := binary.Read(reader, binary.LittleEndian, &page)
 		if err != nil {
 			panic(err)
 		}
@@ -81,7 +52,7 @@ func LoadPages(pageCount uint32, in string) []Page {
 func LoadLanguage(in string) (*Language, error) {
 	bytes, err := os.ReadFile(in)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	language := Language{}
 	err = json.Unmarshal(bytes, &language)

@@ -7,15 +7,16 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/mtgto/pediaroute-go/internal/app/core"
-	"github.com/xwb1989/sqlparser"
 	"io"
 	"log"
 	"os"
-	"path"
-	"sort"
+	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/mtgto/pediaroute-go/internal/app/core"
+	"github.com/xwb1989/sqlparser"
 )
 
 type page struct {
@@ -49,13 +50,15 @@ func buildIndex[K cmp.Ordered](pages []page, keyFn func(page) K) []indexEntry[K]
 	for i, p := range pages {
 		idx[i] = indexEntry[K]{key: keyFn(p), index: uint32(i)}
 	}
-	sort.Slice(idx, func(i, j int) bool { return idx[i].key < idx[j].key })
+	slices.SortFunc(idx, func(a, b indexEntry[K]) int { return cmp.Compare(a.key, b.key) })
 	return idx
 }
 
 func lookupIndex[K cmp.Ordered](idx []indexEntry[K], key K) (uint32, bool) {
-	i := sort.Search(len(idx), func(k int) bool { return idx[k].key >= key })
-	if i < len(idx) && idx[i].key == key {
+	i, found := slices.BinarySearchFunc(idx, key, func(e indexEntry[K], k K) int {
+		return cmp.Compare(e.key, k)
+	})
+	if found {
 		return idx[i].index, true
 	}
 	return 0, false
@@ -70,8 +73,8 @@ func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, ve
 		Version:   version,
 	}
 	var pages []page
-	pageFile := path.Join(outDir, language.PageFile)
-	titleFile := path.Join(outDir, language.TitleFile)
+	pageFile := filepath.Join(outDir, language.PageFile)
+	titleFile := filepath.Join(outDir, language.TitleFile)
 	log.Printf("Load \"%s\".\n", pageSQLFile)
 	pages = loadPages(pageSQLFile)
 	language.PageCount = uint32(len(pages))
@@ -87,14 +90,14 @@ func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, ve
 		log.Printf("%d linktargets.\n", len(linktargets))
 	}
 
-	pageLinkFile := path.Join(outDir, language.LinkFile)
+	pageLinkFile := filepath.Join(outDir, language.LinkFile)
 	log.Printf("Create \"%s\".\n", pageLinkFile)
 	linkCount := generatePageLinks(pageLinkSQLFile, pageLinkFile, pages, idIndex, titleIndex, linktargets)
 	language.LinkCount = linkCount
 	log.Printf("%v links loaded.\n", language.LinkCount)
 	generatePages(pageFile, titleFile, pages)
 
-	configFile := path.Join(outDir, "config.json")
+	configFile := filepath.Join(outDir, "config.json")
 	configBytes, err := json.MarshalIndent(language, "", "  ")
 	if err != nil {
 		panic(err)
@@ -106,11 +109,8 @@ func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, ve
 	return nil
 }
 
-/**
- * Parse SQL insert statement of `pages` table.
- *
- * It returns pages which namespace == 0 (normal page)
- */
+// Parse SQL insert statement of `pages` table.
+// It returns pages which namespace == 0 (normal page)
 func parsePageStatement(stmt *sqlparser.Insert) ([]page, error) {
 	pages := make([]page, 0)
 	var columnIndex, pageID, pageNamespace, pageIsRedirect int
@@ -193,15 +193,18 @@ func loadPages(in string) []page {
 		}
 	}
 	// Pre-compute lowercase once; O(N log N) comparisons would each allocate otherwise.
-	tmp := make([]struct {
+	type pageWithLower struct {
 		p     page
 		lower string
-	}, len(allPages))
+	}
+	tmp := make([]pageWithLower, len(allPages))
 	for i, p := range allPages {
 		tmp[i].p = p
 		tmp[i].lower = strings.ToLower(p.title)
 	}
-	sort.Slice(tmp, func(i, j int) bool { return tmp[i].lower < tmp[j].lower })
+	slices.SortFunc(tmp, func(a, b pageWithLower) int {
+		return cmp.Compare(a.lower, b.lower)
+	})
 	for i, t := range tmp {
 		allPages[i] = t.p
 	}
@@ -481,11 +484,11 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 	defer fp.Close()
 	linkWriter := bufio.NewWriterSize(fp, 4*1024*1024)
 
-	sort.Slice(pairs, func(i, j int) bool {
-		if pairs[i].from != pairs[j].from {
-			return pairs[i].from < pairs[j].from
+	slices.SortFunc(pairs, func(a, b linkPair) int {
+		if a.from != b.from {
+			return cmp.Compare(a.from, b.from)
 		}
-		return pairs[i].to < pairs[j].to
+		return cmp.Compare(a.to, b.to)
 	})
 
 	var linkIndex uint32
@@ -504,11 +507,11 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 		i = j
 	}
 
-	sort.Slice(pairs, func(i, j int) bool {
-		if pairs[i].to != pairs[j].to {
-			return pairs[i].to < pairs[j].to
+	slices.SortFunc(pairs, func(a, b linkPair) int {
+		if a.to != b.to {
+			return cmp.Compare(a.to, b.to)
 		}
-		return pairs[i].from < pairs[j].from
+		return cmp.Compare(a.from, b.from)
 	})
 
 	for i := 0; i < len(pairs); {
