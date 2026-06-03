@@ -14,25 +14,30 @@ func TestSearch(t *testing.T) {
 	// E -> D
 	// F -> A
 	pages := []core.Page{
-		{Id: 0, TitleOffset: 0, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 0, ForwardLinkLength: 1, BackwardLinkIndex: 7, BackwardLinkLength: 1},
-		{Id: 1, TitleOffset: 1, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 1, ForwardLinkLength: 2, BackwardLinkIndex: 8, BackwardLinkLength: 1},
-		{Id: 2, TitleOffset: 2, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 3, ForwardLinkLength: 1, BackwardLinkIndex: 9, BackwardLinkLength: 1},
-		{Id: 3, TitleOffset: 3, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 4, ForwardLinkLength: 1, BackwardLinkIndex: 10, BackwardLinkLength: 1},
-		{Id: 4, TitleOffset: 4, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 5, ForwardLinkLength: 1, BackwardLinkIndex: 11, BackwardLinkLength: 2},
-		{Id: 5, TitleOffset: 5, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 6, ForwardLinkLength: 1, BackwardLinkIndex: 13, BackwardLinkLength: 0},
+		{Id: 0, TitleOffset: 0, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 0, ForwardLinkLength: 1, BackwardLinkIndex: 0, BackwardLinkLength: 1},
+		{Id: 1, TitleOffset: 1, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 1, ForwardLinkLength: 2, BackwardLinkIndex: 1, BackwardLinkLength: 1},
+		{Id: 2, TitleOffset: 2, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 3, ForwardLinkLength: 1, BackwardLinkIndex: 2, BackwardLinkLength: 1},
+		{Id: 3, TitleOffset: 3, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 4, ForwardLinkLength: 1, BackwardLinkIndex: 3, BackwardLinkLength: 1},
+		{Id: 4, TitleOffset: 4, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 5, ForwardLinkLength: 1, BackwardLinkIndex: 4, BackwardLinkLength: 2},
+		{Id: 5, TitleOffset: 5, TitleLength: 1, IsRedirect: false, ForwardLinkIndex: 6, ForwardLinkLength: 1, BackwardLinkIndex: 6, BackwardLinkLength: 0},
 	}
 	titleFile, err := os.Open("testdata/title.dat")
 	if err != nil {
 		t.Fatalf("Failed to open title data file: %v\n", err)
 	}
-	linkFile, err := os.Open("testdata/link.dat")
+	forwardLinkFile, err := os.Open("testdata/forward_link.dat")
 	if err != nil {
-		t.Fatalf("Failed to open link data: %v\n", err)
+		t.Fatalf("Failed to open forward link data: %v\n", err)
+	}
+	backwardLinkFile, err := os.Open("testdata/backward_link.dat")
+	if err != nil {
+		t.Fatalf("Failed to open backward link data: %v\n", err)
 	}
 	w := Wikipedia{
-		pages:     pages,
-		titleFile: titleFile,
-		linkFile:  linkFile,
+		pages:            pages,
+		titleFile:        titleFile,
+		forwardLinkFile:  forwardLinkFile,
+		backwardLinkFile: backwardLinkFile,
 	}
 
 	testSearch := func(start, goal string, expected []string) {
@@ -66,11 +71,7 @@ func TestRelatedPages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to open title data file: %v\n", err)
 	}
-	linkFile, err := os.Open("testdata/link.dat")
-	if err != nil {
-		t.Fatalf("Failed to open link data: %v\n", err)
-	}
-	w := Wikipedia{pages: pages, titleFile: titleFile, linkFile: linkFile}
+	w := Wikipedia{pages: pages, titleFile: titleFile}
 
 	tests := []struct {
 		word     string

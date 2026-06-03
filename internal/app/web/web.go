@@ -15,9 +15,10 @@ import (
 
 // Data structure
 type Wikipedia struct {
-	pages     []core.Page
-	titleFile *os.File
-	linkFile  *os.File
+	pages            []core.Page
+	titleFile        *os.File
+	forwardLinkFile  *os.File
+	backwardLinkFile *os.File
 }
 
 var ErrNotFound = errors.New("not found")
@@ -214,7 +215,7 @@ func (w *Wikipedia) search(start, goal map[uint32]struct{}, depth int) ([]uint32
 func (w *Wikipedia) forwardLinks(page core.Page) ([]uint32, error) {
 	links := make([]uint32, page.ForwardLinkLength)
 	buf := make([]byte, int(page.ForwardLinkLength)*4)
-	if _, err := w.linkFile.ReadAt(buf, int64(page.ForwardLinkIndex)*4); err != nil {
+	if _, err := w.forwardLinkFile.ReadAt(buf, int64(page.ForwardLinkIndex)*4); err != nil {
 		return nil, err
 	}
 	if err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &links); err != nil {
@@ -226,7 +227,7 @@ func (w *Wikipedia) forwardLinks(page core.Page) ([]uint32, error) {
 func (w *Wikipedia) backwardLinks(page core.Page) ([]uint32, error) {
 	links := make([]uint32, page.BackwardLinkLength)
 	buf := make([]byte, int(page.BackwardLinkLength)*4)
-	if _, err := w.linkFile.ReadAt(buf, int64(page.BackwardLinkIndex)*4); err != nil {
+	if _, err := w.backwardLinkFile.ReadAt(buf, int64(page.BackwardLinkIndex)*4); err != nil {
 		return nil, err
 	}
 	if err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &links); err != nil {

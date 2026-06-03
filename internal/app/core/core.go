@@ -9,13 +9,14 @@ import (
 
 // Language defines JSON structure for data set of wikipediaPages.
 type Language struct {
-	Id        string `json:"id"`
-	PageCount uint32 `json:"page_count"`
-	PageFile  string `json:"page_file"`
-	TitleFile string `json:"title_file"`
-	LinkCount uint64 `json:"link_count"`
-	LinkFile  string `json:"link_file"`
-	Version   string `json:"version"` // YYYYMMDD
+	Id               string `json:"id"`
+	PageCount        uint32 `json:"page_count"`
+	PageFile         string `json:"page_file"`
+	TitleFile        string `json:"title_file"`
+	LinkCount        uint64 `json:"link_count"`
+	ForwardLinkFile  string `json:"forward_link_file"`
+	BackwardLinkFile string `json:"backward_link_file"`
+	Version          string `json:"version"` // YYYYMMDD
 }
 
 type Page struct {
