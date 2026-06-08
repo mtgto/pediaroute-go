@@ -12,10 +12,11 @@ func main() {
 	var wikipedia web.Wikipedia
 
 	var (
-		count = flag.Int("n", 10000, "Count of search")
-		pageFile = flag.String("ip", "page.dat", "File path of pages")
-		titleFile = flag.String("it", "title.dat", "File path of titles")
-		linkFile = flag.String("il", "link.dat", "File path of links")
+		count            = flag.Int("n", 10000, "Count of search")
+		pageFile         = flag.String("ip", "page.dat", "File path of pages")
+		titleFile        = flag.String("it", "title.dat", "File path of titles")
+		forwardLinkFile  = flag.String("ifl", "forward_link.dat", "File path of forward links")
+		backwardLinkFile = flag.String("ibl", "backward_link.dat", "File path of backward links")
 	)
 
 	flag.Parse()
@@ -28,19 +29,26 @@ func main() {
 		titleFile = &file
 	}
 	log.Printf("title file: %v\n", *titleFile)
-	if file, ok := os.LookupEnv("LINK_FILE"); ok {
-		linkFile = &file
+	if file, ok := os.LookupEnv("FORWARD_LINK_FILE"); ok {
+		forwardLinkFile = &file
 	}
-	log.Printf("link file: %v\n", *linkFile)
+	log.Printf("forward link file: %v\n", *forwardLinkFile)
+	if file, ok := os.LookupEnv("BACKWARD_LINK_FILE"); ok {
+		backwardLinkFile = &file
+	}
+	log.Printf("backward link file: %v\n", *backwardLinkFile)
 
 	if !isFileExists(*titleFile) {
 		log.Fatalf("Title file does not exists: %v", *titleFile)
 	}
-	if !isFileExists(*linkFile) {
-		log.Fatalf("Link file does not exists: %v", *linkFile)
+	if !isFileExists(*forwardLinkFile) {
+		log.Fatalf("Forward link file does not exists: %v", *forwardLinkFile)
+	}
+	if !isFileExists(*backwardLinkFile) {
+		log.Fatalf("Backward link file does not exists: %v", *backwardLinkFile)
 	}
 	log.Println("Data loading...")
-	wikipedia, err := web.Load(0, *pageFile, *titleFile, *linkFile)
+	wikipedia, err := web.Load(0, *pageFile, *titleFile, *forwardLinkFile, *backwardLinkFile)
 	if err != nil {
 		panic(err)
 	}

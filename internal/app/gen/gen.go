@@ -66,11 +66,12 @@ func lookupIndex[K cmp.Ordered](idx []indexEntry[K], key K) (uint32, bool) {
 
 func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, version string) error {
 	language := core.Language{
-		Id:        languageId,
-		PageFile:  "page.dat",
-		TitleFile: "title.dat",
-		LinkFile:  "link.dat",
-		Version:   version,
+		Id:               languageId,
+		PageFile:         "page.dat",
+		TitleFile:        "title.dat",
+		ForwardLinkFile:  "forward_link.dat",
+		BackwardLinkFile: "backward_link.dat",
+		Version:          version,
 	}
 	var pages []page
 	pageFile := filepath.Join(outDir, language.PageFile)
@@ -90,9 +91,10 @@ func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, ve
 		log.Printf("%d linktargets.\n", len(linktargets))
 	}
 
-	pageLinkFile := filepath.Join(outDir, language.LinkFile)
-	log.Printf("Create \"%s\".\n", pageLinkFile)
-	linkCount := generatePageLinks(pageLinkSQLFile, pageLinkFile, pages, idIndex, titleIndex, linktargets)
+	forwardLinkFile := filepath.Join(outDir, language.ForwardLinkFile)
+	backwardLinkFile := filepath.Join(outDir, language.BackwardLinkFile)
+	log.Printf("Create \"%s\" and \"%s\".\n", forwardLinkFile, backwardLinkFile)
+	linkCount := generatePageLinks(pageLinkSQLFile, forwardLinkFile, backwardLinkFile, pages, idIndex, titleIndex, linktargets)
 	language.LinkCount = linkCount
 	log.Printf("%v links loaded.\n", language.LinkCount)
 	generatePages(pageFile, titleFile, pages)
@@ -393,7 +395,7 @@ func parseNewPageLinkStatement(stmt *sqlparser.Insert, linktargets map[uint64]st
 	return pagelinks, err
 }
 
-func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry[int32], titleIndex []indexEntry[string], linktargets map[uint64]string) uint64 {
+func generatePageLinks(in string, forwardOut string, backwardOut string, pages []page, idIndex []indexEntry[int32], titleIndex []indexEntry[string], linktargets map[uint64]string) uint64 {
 	// Pairs are written to a temp file during parsing to avoid peak memory contention
 	// with the SQL parser; the full pairs slice is loaded only after parsing completes.
 	tmpFile, err := os.CreateTemp("", "pediaroute-pairs-*")
@@ -477,12 +479,19 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 		}
 	}
 
-	fp, err := os.Create(out)
+	forwardFp, err := os.Create(forwardOut)
 	if err != nil {
 		panic(err)
 	}
-	defer fp.Close()
-	linkWriter := bufio.NewWriterSize(fp, 4*1024*1024)
+	defer forwardFp.Close()
+	forwardLinkWriter := bufio.NewWriterSize(forwardFp, 4*1024*1024)
+
+	backwardFp, err := os.Create(backwardOut)
+	if err != nil {
+		panic(err)
+	}
+	defer backwardFp.Close()
+	backwardLinkWriter := bufio.NewWriterSize(backwardFp, 4*1024*1024)
 
 	slices.SortFunc(pairs, func(a, b linkPair) int {
 		if a.from != b.from {
@@ -496,7 +505,7 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 		currentFrom := pairs[i].from
 		j := i
 		for j < len(pairs) && pairs[j].from == currentFrom {
-			if err := binary.Write(linkWriter, binary.LittleEndian, pairs[j].to); err != nil {
+			if err := binary.Write(forwardLinkWriter, binary.LittleEndian, pairs[j].to); err != nil {
 				panic(err)
 			}
 			j++
@@ -507,6 +516,10 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 		i = j
 	}
 
+	if err := forwardLinkWriter.Flush(); err != nil {
+		panic(err)
+	}
+
 	slices.SortFunc(pairs, func(a, b linkPair) int {
 		if a.to != b.to {
 			return cmp.Compare(a.to, b.to)
@@ -514,11 +527,12 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 		return cmp.Compare(a.from, b.from)
 	})
 
+	linkIndex = 0
 	for i := 0; i < len(pairs); {
 		currentTo := pairs[i].to
 		j := i
 		for j < len(pairs) && pairs[j].to == currentTo {
-			if err := binary.Write(linkWriter, binary.LittleEndian, pairs[j].from); err != nil {
+			if err := binary.Write(backwardLinkWriter, binary.LittleEndian, pairs[j].from); err != nil {
 				panic(err)
 			}
 			j++
@@ -529,7 +543,7 @@ func generatePageLinks(in string, out string, pages []page, idIndex []indexEntry
 		i = j
 	}
 
-	if err := linkWriter.Flush(); err != nil {
+	if err := backwardLinkWriter.Flush(); err != nil {
 		panic(err)
 	}
 	return uint64(len(pairs))

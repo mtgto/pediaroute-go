@@ -128,25 +128,26 @@ func TestBuildIndex(t *testing.T) {
 // TestRun is an end-to-end test that runs Run() and verifies all output files.
 //
 // Graph:  A -> B, C
-//         B -> C
-//         D -> A   (D is a redirect page)
-//         link to "NoSuchPage" is silently ignored
-//         namespace-1 page "Talk:X" is excluded
+//
+//	B -> C
+//	D -> A   (D is a redirect page)
+//	link to "NoSuchPage" is silently ignored
+//	namespace-1 page "Talk:X" is excluded
 //
 // Pages sorted by lowercase title: A(0) B(1) C(2) D(3)
 //
-// link.dat forward section (indices):  1 2 | 2 | 0
+// forward_link.dat (indices):  1 2 | 2 | 0
 //
 //	page 0 (A): fwdIdx=0 len=2  → B(1), C(2)
 //	page 1 (B): fwdIdx=2 len=1  → C(2)
 //	page 2 (C): fwdIdx=0 len=0  (no outgoing)
 //	page 3 (D): fwdIdx=3 len=1  → A(0)
 //
-// link.dat backward section (indices): 3 | 0 | 0 1
+// backward_link.dat (indices reset to 0): 3 | 0 | 0 1
 //
-//	page 0 (A): bwdIdx=4 len=1  ← D(3)
-//	page 1 (B): bwdIdx=5 len=1  ← A(0)
-//	page 2 (C): bwdIdx=6 len=2  ← A(0), B(1)
+//	page 0 (A): bwdIdx=0 len=1  ← D(3)
+//	page 1 (B): bwdIdx=1 len=1  ← A(0)
+//	page 2 (C): bwdIdx=2 len=2  ← A(0), B(1)
 //	page 3 (D): bwdIdx=0 len=0  (no incoming)
 func TestRun(t *testing.T) {
 	pageSQLFile := writeGzipSQL(t,
@@ -183,14 +184,24 @@ func TestRun(t *testing.T) {
 		t.Errorf("title.dat: want %q, got %q", wantTitle, gotTitle)
 	}
 
-	// --- link.dat ---
-	var wantLinkBuf bytes.Buffer
-	for _, v := range []uint32{1, 2, 2, 0, 3, 0, 0, 1} {
-		binary.Write(&wantLinkBuf, binary.LittleEndian, v)
+	// --- forward_link.dat ---
+	var wantForwardBuf bytes.Buffer
+	for _, v := range []uint32{1, 2, 2, 0} {
+		binary.Write(&wantForwardBuf, binary.LittleEndian, v)
 	}
-	gotLink, _ := os.ReadFile(filepath.Join(outDir, "link.dat"))
-	if !bytes.Equal(gotLink, wantLinkBuf.Bytes()) {
-		t.Errorf("link.dat:\n  want %x\n  got  %x", wantLinkBuf.Bytes(), gotLink)
+	gotForward, _ := os.ReadFile(filepath.Join(outDir, "forward_link.dat"))
+	if !bytes.Equal(gotForward, wantForwardBuf.Bytes()) {
+		t.Errorf("forward_link.dat:\n  want %x\n  got  %x", wantForwardBuf.Bytes(), gotForward)
+	}
+
+	// --- backward_link.dat ---
+	var wantBackwardBuf bytes.Buffer
+	for _, v := range []uint32{3, 0, 0, 1} {
+		binary.Write(&wantBackwardBuf, binary.LittleEndian, v)
+	}
+	gotBackward, _ := os.ReadFile(filepath.Join(outDir, "backward_link.dat"))
+	if !bytes.Equal(gotBackward, wantBackwardBuf.Bytes()) {
+		t.Errorf("backward_link.dat:\n  want %x\n  got  %x", wantBackwardBuf.Bytes(), gotBackward)
 	}
 
 	// --- page.dat ---
@@ -207,9 +218,9 @@ func TestRun(t *testing.T) {
 		bwdLen     uint32
 	}
 	for _, p := range []pageRecord{
-		{1, 0, 1, false, 0, 2, 4, 1},
-		{2, 2, 1, false, 2, 1, 5, 1},
-		{3, 4, 1, false, 0, 0, 6, 2},
+		{1, 0, 1, false, 0, 2, 0, 1},
+		{2, 2, 1, false, 2, 1, 1, 1},
+		{3, 4, 1, false, 0, 0, 2, 2},
 		{4, 6, 1, true, 3, 1, 0, 0},
 	} {
 		binary.Write(&wantPageBuf, binary.LittleEndian, p.id)
@@ -268,13 +279,22 @@ func TestRunNewFormat(t *testing.T) {
 		t.Errorf("title.dat: want %q, got %q", wantTitle, gotTitle)
 	}
 
-	var wantLinkBuf bytes.Buffer
-	for _, v := range []uint32{1, 2, 2, 0, 3, 0, 0, 1} {
-		binary.Write(&wantLinkBuf, binary.LittleEndian, v)
+	var wantForwardBuf bytes.Buffer
+	for _, v := range []uint32{1, 2, 2, 0} {
+		binary.Write(&wantForwardBuf, binary.LittleEndian, v)
 	}
-	gotLink, _ := os.ReadFile(filepath.Join(outDir, "link.dat"))
-	if !bytes.Equal(gotLink, wantLinkBuf.Bytes()) {
-		t.Errorf("link.dat:\n  want %x\n  got  %x", wantLinkBuf.Bytes(), gotLink)
+	gotForward, _ := os.ReadFile(filepath.Join(outDir, "forward_link.dat"))
+	if !bytes.Equal(gotForward, wantForwardBuf.Bytes()) {
+		t.Errorf("forward_link.dat:\n  want %x\n  got  %x", wantForwardBuf.Bytes(), gotForward)
+	}
+
+	var wantBackwardBuf bytes.Buffer
+	for _, v := range []uint32{3, 0, 0, 1} {
+		binary.Write(&wantBackwardBuf, binary.LittleEndian, v)
+	}
+	gotBackward, _ := os.ReadFile(filepath.Join(outDir, "backward_link.dat"))
+	if !bytes.Equal(gotBackward, wantBackwardBuf.Bytes()) {
+		t.Errorf("backward_link.dat:\n  want %x\n  got  %x", wantBackwardBuf.Bytes(), gotBackward)
 	}
 }
 

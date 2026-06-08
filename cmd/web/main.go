@@ -52,9 +52,10 @@ func main() {
 		}
 		pageFile := filepath.Join(filepath.Dir(langFile), language.PageFile)
 		titleFile := filepath.Join(filepath.Dir(langFile), language.TitleFile)
-		linkFile := filepath.Join(filepath.Dir(langFile), language.LinkFile)
+		forwardLinkFile := filepath.Join(filepath.Dir(langFile), language.ForwardLinkFile)
+		backwardLinkFile := filepath.Join(filepath.Dir(langFile), language.BackwardLinkFile)
 		log.Printf("Start loading for language %v\n", language.Id)
-		wikipedia, err := web.Load(language.PageCount, pageFile, titleFile, linkFile)
+		wikipedia, err := web.Load(language.PageCount, pageFile, titleFile, forwardLinkFile, backwardLinkFile)
 		if err != nil {
 			log.Printf("Failed to load for lang %v: %v", lang, err)
 		} else {
