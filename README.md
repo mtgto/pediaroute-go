@@ -6,7 +6,7 @@ Source of https://pediaroute.com/ .
 
 You need
 
-- Golang 1.26
+- Golang 1.27
 - Make
 - Node.js 24+
 - pnpm
