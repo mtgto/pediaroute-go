@@ -93,6 +93,19 @@ mtgto/pediaroute:latest
 
 The app will be available at http://localhost:8080 .
 
+# Development
+
+## Upgrading the Go version
+
+When bumping the Go version required by this project, update all of the
+following:
+
+- `go.mod`: the `go` directive
+- `.github/workflows/test.yml`: `go-version` for `actions/setup-go`
+- `build/package/app/Dockerfile`: the `golang:X.Y-trixie` base image
+- `build/package/data/Dockerfile`: the `golang:X.Y-trixie` base images (there are multiple stages)
+- `README.md`: the "Golang" version listed under "How to build"
+
 # License
 
 GPL v3
