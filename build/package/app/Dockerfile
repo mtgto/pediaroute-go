@@ -13,7 +13,7 @@ COPY web .
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm build
 
-FROM golang:1.26-trixie AS app
+FROM golang:1.27-trixie AS app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 RUN --mount=type=cache,target=/go/pkg/mod/,sharing=locked \
     --mount=type=bind,source=go.sum,target=go.sum \

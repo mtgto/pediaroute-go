@@ -2,7 +2,7 @@
 
 # DOCKER_BUILDKIT=1 docker build --file build/package/data/Dockerfile --build-arg DATE=YYYYMMDD --tag mtgto/pediaroute-data:YYYYMMDD .
 
-FROM golang:1.26-trixie AS app
+FROM golang:1.27-trixie AS app
 WORKDIR /go/src/github.com/mtgto/pediaroute-go
 COPY Makefile go.mod go.sum ./
 RUN go mod download
@@ -10,7 +10,7 @@ COPY cmd ./cmd
 COPY internal ./internal
 RUN --mount=type=cache,target=/root/.cache/go-build make build/gen
 
-FROM golang:1.26-trixie AS ja
+FROM golang:1.27-trixie AS ja
 WORKDIR /data
 ARG DATE
 ARG BASE_URL=https://wikimedia.bringyour.com/
@@ -25,7 +25,7 @@ RUN mkdir ja
 RUN ./gen -lang ja -ip "jawiki-${DATE}-page.sql.gz" -il "jawiki-${DATE}-pagelinks.sql.gz" -ilt "jawiki-${DATE}-linktarget.sql.gz" -o ja
 
 
-FROM golang:1.26-trixie AS en
+FROM golang:1.27-trixie AS en
 WORKDIR /data
 ARG DATE
 ARG BASE_URL=https://wikimedia.bringyour.com/
