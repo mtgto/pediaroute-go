@@ -11,9 +11,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mtgto/pediaroute-go/internal/app/core"
 	"github.com/xwb1989/sqlparser"
@@ -64,7 +66,28 @@ func lookupIndex[K cmp.Ordered](idx []indexEntry[K], key K) (uint32, bool) {
 	return 0, false
 }
 
+var versionPattern = regexp.MustCompile(`\d{8}`)
+
+// extractVersion returns the YYYYMMDD date embedded in the dump file name
+// (e.g. "jawiki-20250101-page.sql.gz" -> "20250101"), or "" if not found.
+func extractVersion(path string) string {
+	for _, candidate := range versionPattern.FindAllString(filepath.Base(path), -1) {
+		if _, err := time.Parse("20060102", candidate); err == nil {
+			return candidate
+		}
+	}
+	return ""
+}
+
 func Run(languageId, pageSQLFile, pageLinkSQLFile, linktargetSQLFile, outDir, version string) error {
+	if version == "" {
+		if v := extractVersion(pageSQLFile); v != "" {
+			version = v
+			log.Printf("Version %q was extracted from \"%s\".\n", version, filepath.Base(pageSQLFile))
+		} else {
+			log.Printf("Warning: no -version given and no date found in \"%s\". config.json will have an empty version.\n", filepath.Base(pageSQLFile))
+		}
+	}
 	language := core.Language{
 		Id:               languageId,
 		PageFile:         "page.dat",

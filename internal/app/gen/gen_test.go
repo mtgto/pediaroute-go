@@ -20,6 +20,22 @@ func writeGzipSQL(t *testing.T, sql string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+	return writeGzip(t, f, sql)
+}
+
+// writeGzipSQLNamed writes SQL content as a gzip-compressed file with the given
+// file name under a temp directory and returns the path.
+func writeGzipSQLNamed(t *testing.T, name, sql string) string {
+	t.Helper()
+	f, err := os.Create(filepath.Join(t.TempDir(), name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return writeGzip(t, f, sql)
+}
+
+func writeGzip(t *testing.T, f *os.File, sql string) string {
+	t.Helper()
 	defer f.Close()
 	gw := gzip.NewWriter(f)
 	if _, err := gw.Write([]byte(sql)); err != nil {
@@ -29,6 +45,74 @@ func writeGzipSQL(t *testing.T, sql string) string {
 		t.Fatal(err)
 	}
 	return f.Name()
+}
+
+func TestExtractVersion(t *testing.T) {
+	tests := []struct {
+		path string
+		want string
+	}{
+		{"jawiki-20250101-page.sql.gz", "20250101"},
+		{"/path/to/enwiki-20250320-page.sql.gz", "20250320"},
+		{"page.sql.gz", ""},
+		{"jawiki-12345678-page.sql.gz", ""}, // not a valid date
+		{"/dump/20250101/page.sql.gz", ""},  // date is in the directory, not the file name
+	}
+	for _, tt := range tests {
+		if got := extractVersion(tt.path); got != tt.want {
+			t.Errorf("extractVersion(%q): want %q, got %q", tt.path, tt.want, got)
+		}
+	}
+}
+
+// Run should fall back to the date in the page sql file name when version is empty.
+func TestRunExtractsVersionFromFileName(t *testing.T) {
+	pageSQLFile := writeGzipSQLNamed(t, "jawiki-20250101-page.sql.gz",
+		"INSERT INTO `page` VALUES (1,0,'A',0),(2,0,'B',0)")
+	pageLinkSQLFile := writeGzipSQLNamed(t, "jawiki-20250101-pagelinks.sql.gz",
+		"INSERT INTO `pagelinks` VALUES (1,0,'B',0)")
+	outDir := t.TempDir()
+
+	if err := Run("ja", pageSQLFile, pageLinkSQLFile, "", outDir, ""); err != nil {
+		t.Fatal(err)
+	}
+
+	configBytes, err := os.ReadFile(filepath.Join(outDir, "config.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lang core.Language
+	if err := json.Unmarshal(configBytes, &lang); err != nil {
+		t.Fatal(err)
+	}
+	if lang.Version != "20250101" {
+		t.Errorf("Version: want %q, got %q", "20250101", lang.Version)
+	}
+}
+
+// An explicit version takes precedence over the file name.
+func TestRunPrefersExplicitVersion(t *testing.T) {
+	pageSQLFile := writeGzipSQLNamed(t, "jawiki-20250101-page.sql.gz",
+		"INSERT INTO `page` VALUES (1,0,'A',0),(2,0,'B',0)")
+	pageLinkSQLFile := writeGzipSQLNamed(t, "jawiki-20250101-pagelinks.sql.gz",
+		"INSERT INTO `pagelinks` VALUES (1,0,'B',0)")
+	outDir := t.TempDir()
+
+	if err := Run("ja", pageSQLFile, pageLinkSQLFile, "", outDir, "20200202"); err != nil {
+		t.Fatal(err)
+	}
+
+	configBytes, err := os.ReadFile(filepath.Join(outDir, "config.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lang core.Language
+	if err := json.Unmarshal(configBytes, &lang); err != nil {
+		t.Fatal(err)
+	}
+	if lang.Version != "20200202" {
+		t.Errorf("Version: want %q, got %q", "20200202", lang.Version)
+	}
 }
 
 func TestParsePageStatement(t *testing.T) {
