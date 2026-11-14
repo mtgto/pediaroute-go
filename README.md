@@ -18,7 +18,14 @@ $ make
 
 # How to generate application data
 
-Before generating application data, you need to download wikipedia sql files.
+Run the following to download the dumps and generate data for both languages into `data/en/` and `data/ja/`
+(re-runnable: finished downloads are skipped and interrupted ones are resumed):
+
+```console
+$ make data VERSION=YYYYMMDD            # LANGS='ja' to limit languages
+```
+
+Or do it manually. Download wikipedia sql files first.
 
 Japanese
 

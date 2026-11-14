@@ -27,3 +27,4 @@ vendor/
 
 # Application
 cmd/web/assets/
+/data/

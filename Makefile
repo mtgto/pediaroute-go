@@ -24,6 +24,11 @@ $(BENCH): cmd/bench/main.go $(wildcard internal/app/core/*.go)
 test-web:
 	$(GO) test -v github.com/mtgto/pediaroute-go/internal/app/web
 
+.PHONY: data
+data: $(GEN)
+	@test -n "$(VERSION)" || (echo "Usage: make data VERSION=YYYYMMDD [LANGS='en ja']" >&2; exit 1)
+	scripts/gen-data.sh $(VERSION) $(LANGS)
+
 .PHONY: setup
 setup:
 	go tool lefthook install
