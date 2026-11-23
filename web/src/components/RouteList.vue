@@ -8,9 +8,7 @@
             <template v-else-if="i === routes.length - 1">{{ t('search.destination') }}</template>
             <template v-else>
               <i18n-t keypath="search.step">
-                <template #num
-                  ><span class="step-n">{{ i }}</span></template
-                >
+                <template #num><span class="step-n">{{ i }}</span></template>
               </i18n-t>
             </template>
           </div>

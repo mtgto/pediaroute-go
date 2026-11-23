@@ -5,9 +5,7 @@
 
       <i18n-t keypath="home.hero" tag="h1" class="hero">
         <template #break><br /></template>
-        <template #em
-          ><em class="hero-em">{{ t('home.heroEm') }}</em></template
-        >
+        <template #em><em class="hero-em">{{ t('home.heroEm') }}</em></template>
       </i18n-t>
 
       <p class="subtitle">{{ t('home.subtitle') }}</p>

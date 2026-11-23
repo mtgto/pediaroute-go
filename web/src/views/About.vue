@@ -13,10 +13,7 @@
             <div class="section-label">{{ t('about.findingRoute') }}</div>
           </div>
           <div class="section-body">
-            <p>
-              {{ t('about.sixDegreeIntro') }} <a :href="t('about.sixDegreeUrl')">{{ t('about.sixDegree') }}</a
-              >{{ t('about.sixDegreeSuffix') }}
-            </p>
+            <p>{{ t('about.sixDegreeIntro') }} <a :href="t('about.sixDegreeUrl')">{{ t('about.sixDegree') }}</a>{{ t('about.sixDegreeSuffix') }}</p>
             <p>{{ t('about.routeDescription') }}</p>
           </div>
         </div>
@@ -28,14 +25,8 @@
             <div class="section-label">{{ t('about.data') }}</div>
           </div>
           <div class="section-body">
-            <p>
-              {{ t('about.databasePrefix') }}<a :href="t('about.databaseUrl')">{{ t('about.database') }}</a
-              >{{ t('about.databaseSuffix') }}
-            </p>
-            <p>
-              {{ t('about.licensePrefix') }}<a :href="t('about.commonsUrl')">{{ t('about.commons') }}</a
-              >{{ t('about.licenseSuffix') }}
-            </p>
+            <p>{{ t('about.databasePrefix') }}<a :href="t('about.databaseUrl')">{{ t('about.database') }}</a>{{ t('about.databaseSuffix') }}</p>
+            <p>{{ t('about.licensePrefix') }}<a :href="t('about.commonsUrl')">{{ t('about.commons') }}</a>{{ t('about.licenseSuffix') }}</p>
           </div>
         </div>
 

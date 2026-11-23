@@ -10,9 +10,7 @@
       </template>
       <template v-else>
         <i18n-t keypath="search.notFoundBody">
-          <template #em
-            ><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template
-          >
+          <template #em><em class="notice-em">{{ t('search.notFoundBodyEm') }}</em></template>
         </i18n-t>
       </template>
     </p>
