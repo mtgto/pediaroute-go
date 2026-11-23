@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=cache,target=/root/.cache/go-build \
     make build/web
 
-FROM gcr.io/distroless/base-debian13
+FROM gcr.io/distroless/base-debian13:nonroot
 WORKDIR /app
 COPY --from=app /go/src/github.com/mtgto/pediaroute-go/build/web .
 VOLUME ["/data"]
