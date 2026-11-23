@@ -25,7 +25,7 @@
     "oxfmt": "latest",
     "oxlint": "latest",
     "rimraf": "^6.1.4",
-    "typescript": "~5.9.2",
+    "typescript": "~6.0.3",
     "vite": "^8.3.8",
     "vue-tsc": "^3.3.14"
   }
