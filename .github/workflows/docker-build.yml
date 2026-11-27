@@ -25,7 +25,7 @@ jobs:
           role-to-assume: arn:aws:iam::698568974403:role/github-pediaroute
           aws-region: us-east-1
       - name: Login to Amazon ECR Public
-        uses: aws-actions/amazon-ecr-login@v2.1.7
+        uses: aws-actions/amazon-ecr-login@v2.2.0
         with:
           registry-type: public
       - name: Build and push
